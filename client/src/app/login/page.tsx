@@ -94,7 +94,7 @@ const router=useRouter()
             href="/restpassword"
             className="text-blue-600 font-medium hover:underline"
           >
-            restpasswod
+            resetpasswod
           </Link>
         </div>
         </div>
