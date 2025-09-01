@@ -9,7 +9,10 @@ export async function Register(req: Request, res: Response) {
       data: {
         firstname,
         lastname,
+       
+    emailRedirectTo: "https://your-app.onrender.com/auth/callback"
       },
+        emailRedirectTo: "https://yousra-bank.vercel.app/"
     },
   });
 
