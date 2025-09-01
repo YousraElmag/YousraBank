@@ -5,7 +5,7 @@ export async function resetPassword(req: Request, res: Response) {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email,{ redirectTo: "https://yousrabank.onrender.com/updatepassword" });
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
 
   if (error) return res.status(400).json({ error: error.message });
   res.json({ message: "Password reset email sent" });
