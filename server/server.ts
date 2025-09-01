@@ -1,8 +1,9 @@
 import express from "express";
 import authRoutes from "./routes/auth";
-import 'dotenv/config';
-import cors from 'cors'
 
+import cors from 'cors'
+import { config } from "dotenv";
+config(); // تحميل المتغيرات من .env
 const app = express();
 app.use(cors())
 app.use(express.json());
