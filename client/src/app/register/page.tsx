@@ -42,7 +42,7 @@ const router=useRouter()
 
       if (res.ok) {
         setMessage("Check your email for confirmation");
-          router.push("/userdash");
+        
        
       
       } else {
