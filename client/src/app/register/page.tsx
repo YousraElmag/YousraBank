@@ -108,7 +108,9 @@ const router=useRouter()
           {error && (
             <p className="text-red-600 text-sm font-semibold">{error}</p>
           )}
-
+ {message && (
+    <p className="text-green-600 text-sm font-semibold mt-2">{message}</p>
+  )}
           <button
             type="submit"
             disabled={loading}
