@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { supabase } from "../lib/supabase";
-export default async function handler(req, res) {
+export default async function handler(req: any, res: any) {
   const token = req.headers.authorization?.split(" ")[1];
 
   const {
