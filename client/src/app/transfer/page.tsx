@@ -50,7 +50,7 @@ const [user, setUser] = useState<User | null>(null);
         setSuccess("Transfer completed successfully!");
         setBalance(data.senderBalance);
         setReceverAccount("");
-        setAmount("");
+        setAmount(0);
       } else {
         setError(data.error || "Something went wrong");
       }

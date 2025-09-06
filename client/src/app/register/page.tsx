@@ -2,8 +2,7 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+
 import "./page.css";
 export default function Register() {
   const [firstname, setFirstname] = useState("");
@@ -14,7 +13,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const router = useRouter();
+ 
 
   const handelregist = async (e: React.FormEvent) => {
     e.preventDefault();
