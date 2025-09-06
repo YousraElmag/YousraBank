@@ -8,8 +8,8 @@ import Logout from "../logout/page";
 
 export default function UserDashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [useraccount, setUseraccount] = useState<any | null>(null);
-  const [payments, setPayments] = useState<any[]>([]);
+const [useraccount, setUseraccount] = useState<any | null>(null);
+const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchUser() {
