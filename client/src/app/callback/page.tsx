@@ -10,7 +10,6 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuth = async () => {
       try {
-        
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
 
@@ -20,8 +19,8 @@ export default function AuthCallback() {
           return;
         }
 
-
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        const { data, error } =
+          await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
           console.error("Auth callback error:", error.message);
@@ -30,7 +29,7 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
-          router.push("/userdash"); 
+          router.push("/userdash");
         } else {
           router.push("/login");
         }

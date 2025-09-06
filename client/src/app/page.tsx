@@ -1,6 +1,6 @@
-import Image from "next/image"; 
-import "./style.css"; 
- import Navbar from "./components/Navbar/Navbar";
+import Image from "next/image";
+import "./style.css";
+import Navbar from "./components/Navbar/Navbar";
 
 export default function Home() {
   return (
@@ -12,7 +12,8 @@ export default function Home() {
           <Image src="/landing8.jpeg" alt="" width={500} height={400} />
           <div className="info">
             <h3>
-              Manage your finances effortlessly <br /> Take control of your money today
+              Manage your finances effortlessly <br /> Take control of your
+              money today
             </h3>
             <button>Start today!</button>
           </div>

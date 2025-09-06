@@ -1,8 +1,6 @@
-
-
-body{
-     height: 100vh;
-    overflow: hidden;
+body {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .container {
@@ -18,7 +16,7 @@ body{
   display: flex;
   flex-direction: column;
   gap: 15px;
-  color:#367154;
+  color: #367154;
 }
 
 .registform input {
@@ -36,17 +34,16 @@ body{
 }
 
 .registform button {
-     color: #fff;
-    cursor: pointer;
-    background-color: #367154;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-weight: 600;
-    transition: all .2s ease-in-out;
-    width: 200px;
-    margin: 20px auto;
-
+  color: #fff;
+  cursor: pointer;
+  background-color: #367154;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  width: 200px;
+  margin: 20px auto;
 }
 
 .registform button:hover {

@@ -8,16 +8,22 @@ import { useRouter } from "next/navigation";
 export default function Navbar() {
   const pathname = usePathname();
   const pagesWithButton = ["/", "/features", "/pricing"];
-const router=useRouter()
+  const router = useRouter();
   const showButton = pagesWithButton.includes(pathname);
-  const handelclick=()=>{
-    router.push('/'); 
-  }
+  const handelclick = () => {
+    router.push("/");
+  };
 
   return (
     <div className="navbar">
       <div className="logo">
-        <Image src="/logo2.jpeg" onClick={handelclick}width={200} height={60} alt="logo" />
+        <Image
+          src="/logo2.jpeg"
+          onClick={handelclick}
+          width={200}
+          height={60}
+          alt="logo"
+        />
       </div>
 
       <div className="list">

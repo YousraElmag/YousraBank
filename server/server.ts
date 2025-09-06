@@ -1,11 +1,11 @@
 import express from "express";
+import { config } from "dotenv";
+config();
 import authRoutes from "./routes/auth";
 
-import cors from 'cors'
-import { config } from "dotenv";
-config(); // تحميل المتغيرات من .env
+import cors from "cors";
 const app = express();
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);

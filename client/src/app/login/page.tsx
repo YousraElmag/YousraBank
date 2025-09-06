@@ -4,56 +4,51 @@ import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import './page.css'
+import { supabase } from "../lib/supabase";
+import "./page.css";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-const router=useRouter()
-
+  const router = useRouter();
 
   const handelregist = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-
-    setLoading(true);
     setError("");
-    setMessage("");
+    setLoading(true);
 
     try {
-    
-
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/login", {
-      method:"POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password}),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-      alert("WELCOME");
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      if (data.session) {
+        const token = data.session.access_token;
+        console.log("User token:", token);
+      }
+      if (data.user) {
+        alert("WELCOME");
         router.push("/userdash");
-       
-      
-      } else {
-        setError(data.error || "Something went wrong");
       }
     } catch (err) {
-      setError("email or password wrong");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <div className="container">
         <h3 className="text-center text-2xl font-bold mb-5 text-black">
-         YOUSRABANK
+          YOUSRABANK
         </h3>
 
         <form onSubmit={handelregist} className="registform">
@@ -73,19 +68,14 @@ const router=useRouter()
             required
             className=""
           />
-         
+
           {error && (
             <p className="text-red-600 text-sm font-semibold">{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className=""
-          >
+          <button type="submit" disabled={loading} className="">
             {loading ? "Log in..." : "Log in"}
           </button>
-        
         </form>
 
         <div className="text-center mt-4 text-sm text-gray-700">
@@ -97,8 +87,7 @@ const router=useRouter()
             resetpasswod
           </Link>
         </div>
-        </div>
-  
+      </div>
     </>
   );
 }

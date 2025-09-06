@@ -4,18 +4,17 @@ import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import './page.css'
+import "./page.css";
 export default function Register() {
-  const [firstname,setFirstname]=useState("")
-  const [lastname, setLastname]=useState("")
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-const router=useRouter()
-
+  const router = useRouter();
 
   const handelregist = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,21 +29,19 @@ const router=useRouter()
     setMessage("");
 
     try {
-    
-
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password,firstname,lastname}),
-      });
+      const res = await fetch(
+        "https://yousrabank.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, firstname, lastname }),
+        },
+      );
 
       const data = await res.json();
 
       if (res.ok) {
         setMessage("Check your email for confirmation");
-        
-       
-      
       } else {
         setError(data.error || "Something went wrong");
       }
@@ -57,22 +54,22 @@ const router=useRouter()
 
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <div className="container">
         <h3 className="text-center text-2xl font-bold mb-5 text-black">
-         YOUSRABANK
+          YOUSRABANK
         </h3>
 
         <form onSubmit={handelregist} className="registform">
-             <input
+          <input
             type="text"
             placeholder="First-Name"
             value={firstname}
             onChange={(e) => setFirstname(e.target.value)}
             required
             className=""
-          />  
-           <input
+          />
+          <input
             type="text"
             placeholder="Last-Name"
             value={lastname}
@@ -108,14 +105,12 @@ const router=useRouter()
           {error && (
             <p className="text-red-600 text-sm font-semibold">{error}</p>
           )}
- {message && (
-    <p className="text-green-600 text-sm font-semibold mt-2">{message}</p>
-  )}
-          <button
-            type="submit"
-            disabled={loading}
-            className=""
-          >
+          {message && (
+            <p className="text-green-600 text-sm font-semibold mt-2">
+              {message}
+            </p>
+          )}
+          <button type="submit" disabled={loading} className="">
             {loading ? "Registering..." : "Register"}
           </button>
         </form>
@@ -129,9 +124,7 @@ const router=useRouter()
             Login
           </Link>
         </div>
-        </div>
-  
+      </div>
     </>
   );
 }
-

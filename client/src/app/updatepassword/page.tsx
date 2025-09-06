@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { supabase } from '../lib/supabase';
-import './update.css';
+import { supabase } from "../lib/supabase";
+import "./update.css";
 import Navbar from "../components/Navbar/Navbar";
 
 export default function UpdatePassword() {
@@ -22,22 +22,20 @@ export default function UpdatePassword() {
 
   return (
     <>
-   
-      <Navbar/>
-    <div className="update-password-container">
-     
-      <form className="update-password-form" onSubmit={handleUpdate}>
-        <h2>Update Password</h2>
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Update Password</button>
-      </form>
-    </div>
-      </>
+      <Navbar />
+      <div className="update-password-container">
+        <form className="update-password-form" onSubmit={handleUpdate}>
+          <h2>Update Password</h2>
+          <input
+            type="password"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Update Password</button>
+        </form>
+      </div>
+    </>
   );
 }
