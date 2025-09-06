@@ -27,7 +27,7 @@ export default function UserDashboard() {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", user!.id)
         .single();
 
       if (error) return;
@@ -44,7 +44,7 @@ export default function UserDashboard() {
       const { data, error } = await supabase
         .from("payments")
         .select("*")
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .or(`sender_id.eq.${user!.id},recipient_id.eq.${user!.id}`)
         .order("created_at", { ascending: false });
 
       if (error) return console.error(error);
