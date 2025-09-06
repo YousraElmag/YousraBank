@@ -1,15 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-
+import { User } from "@supabase/supabase-js";
 export default function Transfer() {
   const [receverAccount, setReceverAccount] = useState("");
-  const [amount, setAmount] = useState<number | "">("");
+ const [amount, setAmount] = useState<number>(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
-
-  const [user, setUser] = useState<any>(null);
+const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
@@ -55,7 +54,7 @@ export default function Transfer() {
       } else {
         setError(data.error || "Something went wrong");
       }
-    } catch (err) {
+    } catch  {
       setError("Something went wrong");
     }
   };
@@ -76,7 +75,7 @@ export default function Transfer() {
           type="number"
           placeholder="Amount"
           value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
+        onChange={(e) => setAmount(Number(e.target.value))}
           required
         />
         <button type="submit">Send Money</button>
