@@ -71,10 +71,10 @@ const [payments, setPayments] = useState<any[]>([]);
         </header>
 
         <div className="dashboard-actions">
-          <button className="action-card">
+         <Link href='/transfer'><button className="action-card">
             <span className="icon">💸</span>
-         <Link href='/transfer'><span className="title">Transfer Money</span></Link>  
-          </button>
+         <span className="title">Transfer Money</span>
+          </button></Link> 
           <button className="action-card">
             <span className="icon">💰</span>
             <span className="title">Request Transfer</span>
