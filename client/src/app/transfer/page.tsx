@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { User } from "@supabase/supabase-js";
 export default function Transfer() {
@@ -63,16 +64,16 @@ const [user, setUser] = useState<User | null>(null);
 
   return (
     <div className="container">
+        <h4>YousraBank</h4>
       <h2>💸 Transfer Money</h2>
-      {balance !== null && <p>Your current balance: ${balance}</p>}
       <form onSubmit={handleTransfer}>
-        <input
+      <h2>Send to<input
           type="text"
           placeholder="Receiver Account"
           value={receverAccount}
           onChange={(e) => setReceverAccount(e.target.value)}
           required
-        />
+        /></h2>  
         <input
           type="number"
           placeholder="Amount"
@@ -81,6 +82,7 @@ const [user, setUser] = useState<User | null>(null);
           required
         />
         <button type="submit">Send Money</button>
+        <Link href='/userdash'><button>cancel</button></Link>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
