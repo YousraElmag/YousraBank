@@ -33,7 +33,7 @@ export default function AuthCallback() {
       }
 
       if (type === "recovery") {
-        router.push("/restpassword"); 
+        router.push("/updatepassword"); 
       } else {
         router.push("/userdash");
       }
