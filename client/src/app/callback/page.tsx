@@ -29,7 +29,7 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
-          router.push("/userdash");
+          router.push("/restpassword");
         } else {
           router.push("/login");
         }
