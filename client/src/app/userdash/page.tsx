@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar/Navbar";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import Logout from "../logout/page";
+import Link from "next/link";
 
 export default function UserDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -72,7 +73,7 @@ const [payments, setPayments] = useState<any[]>([]);
         <div className="dashboard-actions">
           <button className="action-card">
             <span className="icon">💸</span>
-            <span className="title">Transfer Money</span>
+         <Link href='/transfer'><span className="title">Transfer Money</span></Link>  
           </button>
           <button className="action-card">
             <span className="icon">💰</span>
@@ -84,7 +85,6 @@ const [payments, setPayments] = useState<any[]>([]);
           </div>
         </div>
 
-        {/* قائمة كل العمليات */}
         <div className="payments">
           <h2>📝 Your Payments</h2>
           <ul>

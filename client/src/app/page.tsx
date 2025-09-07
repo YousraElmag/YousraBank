@@ -1,7 +1,7 @@
 import Image from "next/image";
 import "./style.css";
 import Navbar from "./components/Navbar/Navbar";
-
+import Link from "next/link";
 export default function Home() {
   return (
     <>
@@ -15,7 +15,7 @@ export default function Home() {
               Manage your finances effortlessly <br /> Take control of your
               money today
             </h3>
-            <button>Start today!</button>
+          <Link href='/login'> <button>Start today!</button></Link>
           </div>
         </div>
 
