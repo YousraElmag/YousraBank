@@ -21,7 +21,7 @@ server/.
 
 # production
 /build
-
+/Users/yousra/yousrabank/YousraBank/node_modules
 # misc
 .DS_Store
 *.pem

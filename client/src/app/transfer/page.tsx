@@ -37,7 +37,7 @@ const [user, setUser] = useState<User | null>(null);
         return;
       }
 
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/send", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

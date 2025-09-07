@@ -29,7 +29,7 @@ export default function Register() {
 
     try {
       const res = await fetch(
-        "https://yousrabank.onrender.com/api/auth/register",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

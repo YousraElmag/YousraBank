@@ -10,7 +10,7 @@ export default function ResetPassword() {
 
     try {
       const res = await fetch(
-        "https://yousrabank.onrender.com/api/auth/reset-password",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/reset-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
