@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
@@ -9,33 +7,34 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleAuth = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
+      const hash = window.location.hash.substring(1); 
+      const params = new URLSearchParams(hash);
 
-        if (!code) {
-          console.error("No auth code found in URL");
-          router.push("/login");
-          return;
-        }
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+      const type = params.get("type");
 
-        const { data, error } =
-          await supabase.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          console.error("Auth callback error:", error.message);
-          router.push("/login");
-          return;
-        }
-
-        if (data.session) {
-          router.push("/restpassword");
-        } else {
-          router.push("/login");
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
+      if (!access_token || !refresh_token) {
+        console.error("Missing access_token or refresh_token");
         router.push("/login");
+        return;
+      }
+
+      const { error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token, 
+      });
+
+      if (error) {
+        console.error("Supabase setSession error:", error.message);
+        router.push("/login");
+        return;
+      }
+
+      if (type === "recovery") {
+        router.push("/restpassword"); 
+      } else {
+        router.push("/userdash");
       }
     };
 
