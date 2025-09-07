@@ -3,10 +3,11 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import "./update.css";
 import Navbar from "../components/Navbar/Navbar";
+import { useRouter } from "next/navigation";
 
 export default function UpdatePassword() {
   const [password, setPassword] = useState("");
-
+ const router = useRouter();
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -17,6 +18,7 @@ export default function UpdatePassword() {
     } else {
       alert("Password updated successfully!");
       setPassword("");
+      router.push('/login')
     }
   };
 
