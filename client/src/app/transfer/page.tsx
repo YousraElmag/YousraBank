@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { User } from "@supabase/supabase-js";
+import './transfer.css'
 export default function Transfer() {
   const [receverAccount, setReceverAccount] = useState("");
  const [amount, setAmount] = useState<number>(0);
@@ -74,13 +75,13 @@ const [user, setUser] = useState<User | null>(null);
           onChange={(e) => setReceverAccount(e.target.value)}
           required
         /></h2>  
-        <input
+      <h2>Amount<input
           type="number"
           placeholder="Amount"
           value={amount}
         onChange={(e) => setAmount(Number(e.target.value))}
           required
-        />
+        /></h2>  
         <button type="submit">Send Money</button>
         <Link href='/userdash'><button>cancel</button></Link>
       </form>
