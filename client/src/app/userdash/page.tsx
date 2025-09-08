@@ -89,8 +89,9 @@ const [payments, setPayments] = useState<any[]>([]);
         <div className="payments">
           <h2>📝 Your Payments</h2>
           <ul>
-            {payments.length > 0 ? (
-              payments.map((p) => (
+           {payments.length > 0 ? (
+  payments
+    .filter((p) => p.amount > 0).map((p) => (
                 <li key={p.id}>
                   {p.sender_id === user?.id ? (
                     <span>
