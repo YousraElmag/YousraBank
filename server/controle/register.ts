@@ -35,6 +35,7 @@ export async function Register(req: Request, res: Response) {
         first_name: firstname,
         last_name: lastname,
         bank_account: bankAccount,
+        balance:100
       },
     ]);
 
