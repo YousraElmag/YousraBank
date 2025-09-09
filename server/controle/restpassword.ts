@@ -8,7 +8,7 @@ export async function resetPassword(req: Request, res: Response) {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-  redirectTo: "https://yousra-bank.vercel.app/callback",
+  redirectTo: "https://yousra-bank.vercel.app/",
 });
 
   if (error) return res.status(400).json({ error: error.message });
