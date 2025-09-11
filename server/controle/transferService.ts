@@ -1,27 +1,10 @@
-import { Pool } from "pg";
-import { createClient } from "@supabase/supabase-js";
 import { Request, Response } from "express";
-import * as dotenv from "dotenv";
+import { createClient } from "@supabase/supabase-js";
 
-dotenv.config();
-
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-
-const getSupabaseServerClient = (token: string) => {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_KEY!, 
-    {
-      global: {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    }
-  );
-};
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
 
 export const transferMoney = async (req: Request, res: Response) => {
   try {
@@ -33,71 +16,54 @@ export const transferMoney = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const supabase = getSupabaseServerClient(token);
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // الحصول على المستخدم الحالي من Supabase
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) return res.status(401).json({ error: "Unauthorized" });
 
-    const client = await pool.connect();
+    // التحقق من رصيد المرسل
+    const { data: senderData, error: senderError } = await supabase
+      .from("users")
+      .select("id, balance")
+      .eq("id", user.id)
+      .single();
 
-    try {
-      await client.query("BEGIN");
+    if (senderError || !senderData) throw new Error("Sender not found");
+    if (senderData.balance < amount) throw new Error("Insufficient funds");
 
-     
-      const senderRes = await client.query(
-        "SELECT balance FROM users WHERE id = $1 FOR UPDATE",
-        [user.id]
-      );
-      if (!senderRes.rowCount) throw new Error("Sender not found");
+    // التحقق من المستلم
+    const { data: receiverData, error: receiverError } = await supabase
+      .from("users")
+      .select("id, first_name, balance")
+      .or(`bank_account.eq.${receverAccount},email.eq.${receverEmail}`)
+      .single();
 
-      const senderBalance = senderRes.rows[0].balance;
-      if (senderBalance < amount) throw new Error("Insufficient funds");
+    if (receiverError || !receiverData) throw new Error("Receiver not found");
 
-    
-      const receiverRes = await client.query(
-        "SELECT id, first_name, balance FROM users WHERE bank_account = $1 OR email = $2 FOR UPDATE",
-        [receverAccount, receverEmail]
-      );
-      if (!receiverRes.rowCount) throw new Error("Receiver not found");
+    // تحديث الرصيد باستخدام transaction-like logic (Supabase لا يدعم true SQL transaction هنا)
+    const newSenderBalance = senderData.balance - amount;
+    const newReceiverBalance = receiverData.balance + amount;
 
-      const receiverId = receiverRes.rows[0].id;
-      const receiverName = receiverRes.rows[0].first_name;
+    await supabase.from("users").update({ balance: newSenderBalance }).eq("id", user.id);
+    await supabase.from("users").update({ balance: newReceiverBalance }).eq("id", receiverData.id);
 
-   
-      await client.query(
-        "UPDATE users SET balance = balance - $1 WHERE id = $2",
-        [amount, user.id]
-      );
+    // تسجيل الدفع
+    await supabase.from("payments").insert({
+      user_id: user.id,
+      sender_id: user.id,
+      recipient_id: receiverData.id,
+      recipient_name: receiverData.first_name,
+      amount,
+      currency: "EUR"
+    });
 
-   
-      await client.query(
-        "UPDATE users SET balance = balance + $1 WHERE id = $2",
-        [amount, receiverId]
-      );
-
-   
-      await client.query(
-        "INSERT INTO payments (user_id, sender_id, recipient_id, recipient_name, amount, currency) VALUES ($1,$2,$3,$4,$5,$6)",
-        [user.id, user.id, receiverId, receiverName, amount, "EUR"]
-      );
-
-      await client.query("COMMIT");
-
-      res.json({
-        success: true,
-        message: "Transfer completed successfully",
-        senderBalance: senderBalance - amount
-      });
-
-    } catch (err: any) {
-      await client.query("ROLLBACK");
-      console.error(err);
-      res.status(400).json({ error: err.message });
-    } finally {
-      client.release();
-    }
+    res.json({
+      success: true,
+      message: "Transfer completed successfully",
+      senderBalance: newSenderBalance
+    });
 
   } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Error in transferMoney:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
