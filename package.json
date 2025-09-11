@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/pg": "^8.15.5",
     "concurrently": "^9.2.1",
     "prettier": "^3.6.2",
     "ts-node-dev": "^2.0.0",

@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { supabase } from "../lib/supabase"; 
 import { config } from "dotenv";
+import { Request, Response } from "express"
 config()
 const DATABASE_URL=process.env.DATABASE_URL
 
@@ -8,7 +9,7 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
 });
 
-export const transferMoney = async (req, res) => {
+export const transferMoney = async (req:Request, res:Response) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { receverAccount, amount,receverEmail } = req.body;
 
@@ -63,7 +64,7 @@ export const transferMoney = async (req, res) => {
 
     await client.query("COMMIT");
     res.json({ success: true, message: "Transfer completed successfully" });
-  } catch (err) {
+  } catch (err:any) {
     await client.query("ROLLBACK");
     res.status(400).json({ error: err.message });
   } finally {
