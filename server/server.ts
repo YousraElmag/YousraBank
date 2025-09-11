@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({
   origin: [
-    "https://yousra-bank-mz2y14qc7-yousraelmags-projects.vercel.app", 
+    "https://yousra-bank-git-main-yousraelmags-projects.vercel.app/", 
     "http://localhost:3000" 
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
