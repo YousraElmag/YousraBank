@@ -3,10 +3,10 @@ import { supabase } from "../lib/supabase";
 import { config } from "dotenv";
 import { Request, Response } from "express"
 config()
-const DATABASE_URL=process.env.DATABASE_URL
+
 
 const pool = new Pool({
-  connectionString: DATABASE_URL,
+  connectionString:process.env.DATABASE_URL,
 });
 
 export const transferMoney = async (req:Request, res:Response) => {
