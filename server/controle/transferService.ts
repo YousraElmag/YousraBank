@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { supabase } from "../lib/supabase"; 
 import { config } from "dotenv";
 import { Request, Response } from "express"
-config()
+
 
 
 const pool = new Pool({
