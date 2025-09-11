@@ -30,6 +30,7 @@ body {
   filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#B0BFC4", endColorstr="#78CDDC", GradientType=1 );
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
+
 .update-password-form {
   background-color: white;
   padding: 40px 32px;

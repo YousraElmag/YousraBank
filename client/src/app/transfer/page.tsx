@@ -6,13 +6,16 @@ import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { User } from "@supabase/supabase-js";
 import './transfer.css'
+
 export default function Transfer() {
   const [receverAccount, setReceverAccount] = useState("");
- const [amount, setAmount] = useState<number>(0);
+  const [receverEmail, setReceverEmail] = useState(""); 
+  const [amount, setAmount] = useState<number>(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
-const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
   useEffect(() => {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
@@ -26,7 +29,7 @@ const [user, setUser] = useState<User | null>(null);
     setError("");
     setSuccess("");
 
-    if (!receverAccount || !amount || amount <= 0) {
+    if ((!receverAccount && !receverEmail) || !amount || amount <= 0) {
       setError("Please fill all fields correctly");
       return;
     }
@@ -38,14 +41,13 @@ const [user, setUser] = useState<User | null>(null);
         setError("User not logged in");
         return;
       }
-
-      const res = await fetch(`https://yousrabank.onrender.com/api/auth/send`, {
+      const res = await fetch(`http://localhost:5000/api/auth/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ receverAccount, amount }),
+        body: JSON.stringify({ receverAccount, receverEmail, amount }),
       });
 
       const data = await res.json();
@@ -54,39 +56,51 @@ const [user, setUser] = useState<User | null>(null);
         setSuccess("Transfer completed successfully!");
         setBalance(data.senderBalance);
         setReceverAccount("");
+        setReceverEmail("");
         setAmount(0);
       } else {
         setError(data.error || "Something went wrong");
       }
-    } catch  {
+    } catch {
       setError("Something went wrong");
     }
   };
 
   return (
     <div className="container">
-        <h4>YousraBank</h4>
+      <h4>YousraBank</h4>
       <h2>💸 Transfer Money</h2>
       <form onSubmit={handleTransfer}>
-      <h2>Send to<input
+        <h2>Send to</h2>
+        <input
           type="text"
           placeholder="Receiver Account"
           value={receverAccount}
           onChange={(e) => setReceverAccount(e.target.value)}
-          required
-        /></h2>  
-      <h2>Amount<input
+        />
+        <input
+          type="email"
+          placeholder="Receiver Email"
+          value={receverEmail}
+          onChange={(e) => setReceverEmail(e.target.value)}
+        />
+
+        <h2>Amount</h2>
+        <input
           type="number"
           placeholder="Amount"
           value={amount}
-        onChange={(e) => setAmount(Number(e.target.value))}
+          onChange={(e) => setAmount(Number(e.target.value))}
           required
-        /></h2>  
+        />
+
         <button type="submit">Send Money</button>
-        <Link href='/userdash'><button>cancel</button></Link>
+        <Link href='/userdash'><button type="button">Cancel</button></Link>
       </form>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
+      {balance !== null && <p>Your Balance: {balance} EUR</p>}
     </div>
   );
 }

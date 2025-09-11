@@ -14,7 +14,7 @@ export default async function handler(req: any, res: any) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // استدعاء الـ function من PostgreSQL
+
   const { error: transferError } = await supabase.rpc("transfer_money", {
     sender_id: user.id,
     receiver_account: receverAccount,
