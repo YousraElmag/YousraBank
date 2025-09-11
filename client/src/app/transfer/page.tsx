@@ -42,7 +42,7 @@ export default function Transfer() {
         return;
       }
       const res = await fetch(`https://yousrabank.onrender.com/api/auth/send`, {
-        method: "POST",
+      
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
