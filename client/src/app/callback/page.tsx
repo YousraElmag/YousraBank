@@ -14,7 +14,7 @@ export default function AuthCallback() {
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
       const type = params.get("type");
-
+console.log({ access_token, refresh_token, type });
       if (!access_token || !refresh_token) {
         console.error("Missing access_token or refresh_token");
         router.push("/login");
@@ -32,7 +32,7 @@ export default function AuthCallback() {
         return;
       }
 
-      if (type === "recovery") {
+      if (access_token) {
         router.push("/updatepassword"); 
       } else {
         router.push("/userdash");
