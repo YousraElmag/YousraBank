@@ -27,7 +27,9 @@ body {
     hsla(189, 59%, 67%, 1) 50%,
     hsla(215, 70%, 67%, 1) 100%
   );
-
+ background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed; 
   background: -moz-linear-gradient(
     90deg,
     hsla(195, 14%, 73%, 1) 0%,
