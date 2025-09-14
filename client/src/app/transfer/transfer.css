@@ -1,0 +1,65 @@
+.update-password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+body {
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    hsla(195, 14%, 73%, 1) 0%,
+    hsla(189, 59%, 67%, 1) 50%,
+    hsla(215, 70%, 67%, 1) 100%
+  );
+
+  background: -moz-linear-gradient(
+    90deg,
+    hsla(195, 14%, 73%, 1) 0%,
+    hsla(189, 59%, 67%, 1) 50%,
+    hsla(215, 70%, 67%, 1) 100%
+  );
+
+  background: -webkit-linear-gradient(
+    90deg,
+    hsla(195, 14%, 73%, 1) 0%,
+    hsla(189, 59%, 67%, 1) 50%,
+    hsla(215, 70%, 67%, 1) 100%
+  );
+
+  filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#B0BFC4", endColorstr="#78CDDC", GradientType=1 );
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.container{
+        background: white;
+    height: 600px;
+    width: 400px;
+    margin: 20px auto;
+    box-shadow: 10px 10px 10px 10px #8383a2;
+    padding: 20px;
+    text-align: center;
+
+
+}
+form{
+    margin: 30px;
+    display: flex
+;
+    flex-direction: column;
+}
+form input{
+        background: aliceblue;
+    border: 1px solid lightblue;
+    padding-left: 20px;
+    margin-left: 10px;
+    margin-bottom: 20px;
+}
+form button{
+        cursor: pointer;
+    background: #2d95f1;
+    width: fit-content;
+    margin: 20px auto;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 30px;
+}
