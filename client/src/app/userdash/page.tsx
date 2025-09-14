@@ -94,26 +94,32 @@ const [payments, setPayments] = useState<any[]>([]);
         <div className="payments">
           <h2>📝 Your Payments</h2>
           <ul>
-          {payments.length > 0 ? (
-  payments
-    .filter((p) => p.amount > 0)
-    .map((p) => (
-      <li key={p.id}>
-        {p.sender_id === user?.id ? (
-          <span style={{color:"red"}}>
-            You sent -${p.amount} → {p.recipient.first_name} {p.recipient.last_name}
-          </span>
-        ) : (
-          <span style={{color:"green"}}>
-            You received +${p.amount} ← {p.sender.first_name} {p.sender.last_name}
-          </span>
-        )}
-      </li>
-    ))
+         {payments.length > 0 ? (
+  <>
+    {payments
+      .filter((p) => p.amount > 0)
+      .map((p) => (
+        <li key={p.id}>
+          {p.sender_id === user?.id ? (
+            <span style={{ color: "red" }}>
+              -${p.amount} → {p.recipient.first_name} {p.recipient.last_name}
+            </span>
+          ) : (
+            <span style={{ color: "green" }}>
+              +${p.amount} ← {p.sender.first_name} {p.sender.last_name}
+            </span>
+          )}
+        </li>
+      ))}
+    <Link href="/payments">
+      <button className="allpaymentsbutton">Show all payments</button>
+    </Link>
+  </>
 ) : (
   <p>No payments yet</p>
 )}
           </ul>
+
         </div>
       </div>
     </>
