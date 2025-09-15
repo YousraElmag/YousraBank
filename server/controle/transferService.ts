@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
+import prisma from "../prisma/prisma";
 import { supabase } from "../lib/supabase";
 
 export const transferMoney = async (req: Request, res: Response) => {
@@ -12,76 +12,65 @@ export const transferMoney = async (req: Request, res: Response) => {
     if ((!receverAccount && !receverEmail) || !amount || amount <= 0) {
       return res.status(400).json({ error: "Invalid input" });
     }
-    if (!idempotencyKey) {
-      return res.status(400).json({ error: "Idempotency key required" });
-    }
-    const { data: existingKey } = await supabase
-      .from("idempotency_keys")
-      .select("response")
-      .eq("key", idempotencyKey)
-      .single();
-
-    if (existingKey) {
-      return res.json(existingKey.response); 
-    }
-
+    if (!idempotencyKey) return res.status(400).json({ error: "Idempotency key required" });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) return res.status(401).json({ error: "Unauthorized" });
 
+    const senderId = user.id;
 
-    const { data: senderData, error: senderError } = await supabase
-      .from("users")
-      .select("id, balance")
-      .eq("id", user.id)
-      .single();
+    const existingKey = await prisma.idempotency_keys.findUnique({
+      where: { key: idempotencyKey },
+    });
+    if (existingKey) return res.json(existingKey.response);
 
-    if (senderError || !senderData) throw new Error("Sender not found");
-    if (senderData.balance < amount) throw new Error("Insufficient funds");
+    const result = await prisma.$transaction(async (tx) => {
+      const sender = await tx.users.findUnique({ where: { id: senderId } });
+      if (!sender) throw new Error("Sender not found");
+      if ((sender.balance?.toNumber() || 0) < amount) throw new Error("Insufficient funds");
 
-  
-    const { data: receiverData, error: receiverError } = await supabase
-      .from("users")
-      .select("id, first_name, balance")
-      .or(`bank_account.eq.${receverAccount},email.eq.${receverEmail}`)
-      .single();
+      const receiver = await tx.users.findFirst({
+        where: {
+          OR: [
+            { bank_account: receverAccount },
+            { email: receverEmail },
+          ],
+        },
+      });
+      if (!receiver) throw new Error("Receiver not found");
 
-    if (receiverError || !receiverData) throw new Error("Receiver not found");
+      const newSenderBalance = (sender.balance?.toNumber() || 0) - amount;
+      const newReceiverBalance = (receiver.balance?.toNumber() || 0) + amount;
 
-    const newSenderBalance = senderData.balance - amount;
-    const newReceiverBalance = receiverData.balance + amount;
+      await tx.users.update({ where: { id: sender.id }, data: { balance: newSenderBalance } });
+      await tx.users.update({ where: { id: receiver.id }, data: { balance: newReceiverBalance } });
 
-    await supabase.from("users").update({ balance: newSenderBalance }).eq("id", user.id);
-    await supabase.from("users").update({ balance: newReceiverBalance }).eq("id", receiverData.id);
+      const transactionId = uuidv4();
+      await tx.payments.create({
+        data: {
+          sender_id: sender.id,
+          recipient_id: receiver.id,
+          amount,
+          currency: "EUR",
+          transaction_id: transactionId,
+        },
+      });
 
-  
-    const transferResult = {
-      transactionId: uuidv4(),
-      senderBalance: newSenderBalance,
-      success: true,
-      message: "Transfer completed successfully",
-    };
+      const transferResult = {
+        transactionId,
+        senderBalance: newSenderBalance,
+        success: true,
+        message: "Transfer completed successfully",
+      };
 
-    await supabase.from("payments").insert({
-      user_id: user.id,
-      sender_id: user.id,
-      recipient_id: receiverData.id,
-      recipient_name: receiverData.first_name,
-      amount,
-      currency: "EUR",
-      transaction_id: transferResult.transactionId,
+      await tx.idempotency_keys.create({ data: { key: idempotencyKey, response: transferResult } });
+
+      return transferResult;
     });
 
-  
-    await supabase.from("idempotency_keys").insert({
-      key: idempotencyKey,
-      response: transferResult,
-    });
-
-    res.json(transferResult);
+    res.json(result);
   } catch (err: any) {
-    console.error("Error in transferMoney:", err.message);
+    console.error("Transfer error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
-
