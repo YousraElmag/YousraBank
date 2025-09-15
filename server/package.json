@@ -8,7 +8,8 @@
     "dev:frontend": "npm run dev --prefix client",
     "dev:server": "ts-node-dev --respawn --transpile-only --project tsconfig.json server.ts",
     "build:server": "tsc -p tsconfig.json",
-    "start:server": "node dist/server.js"
+    "start:server": "node dist/server.js",
+      "postinstall": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
