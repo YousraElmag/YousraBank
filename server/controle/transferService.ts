@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import prisma from "../prisma";
 import { supabase } from "../lib/supabase";
+import { Prisma } from "@prisma/client";
 
 export const transferMoney = async (req: Request, res: Response) => {
   try {
@@ -24,7 +25,7 @@ export const transferMoney = async (req: Request, res: Response) => {
     });
     if (existingKey) return res.json(existingKey.response);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const sender = await tx.users.findUnique({ where: { id: senderId } });
       if (!sender) throw new Error("Sender not found");
       if ((sender.balance?.toNumber() || 0) < amount) throw new Error("Insufficient funds");
