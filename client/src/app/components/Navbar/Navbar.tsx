@@ -18,7 +18,7 @@ export default function Navbar() {
     <div className="navbar">
       <div className="logo">
         <Image
-          src="/logo2.jpeg"
+          src="/logo3.jpeg"
           onClick={handelclick}
           width={200}
           height={60}
