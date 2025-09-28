@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import prisma from "../prisma";
 import { supabase } from "../lib/supabase";
-import { Prisma } from "@prisma/client";
+
 
 export const transferMoney = async (req: Request, res: Response) => {
+
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ error: "No token provided" });
@@ -16,7 +17,9 @@ export const transferMoney = async (req: Request, res: Response) => {
     if (!idempotencyKey) return res.status(400).json({ error: "Idempotency key required" });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) return res.status(401).json({ error: "Unauthorized" });
+    if (userError || !user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const senderId = user.id;
 
@@ -25,7 +28,7 @@ export const transferMoney = async (req: Request, res: Response) => {
     });
     if (existingKey) return res.json(existingKey.response);
 
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx) => {
       const sender = await tx.users.findUnique({ where: { id: senderId } });
       if (!sender) throw new Error("Sender not found");
       if ((sender.balance?.toNumber() || 0) < amount) throw new Error("Insufficient funds");
@@ -71,6 +74,7 @@ export const transferMoney = async (req: Request, res: Response) => {
 
     res.json(result);
   } catch (err: any) {
+
     console.error("Transfer error:", err.message);
     res.status(500).json({ error: err.message });
   }

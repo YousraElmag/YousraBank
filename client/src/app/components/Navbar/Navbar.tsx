@@ -29,7 +29,7 @@ export default function Navbar() {
       <div className="list">
         <ul>
           <li>Features</li>
-          <li>Pricing</li>
+         <Link href='/requestmessage'> <li>Request box ✉️</li></Link>
           <li>Support</li>
         </ul>
       </div>

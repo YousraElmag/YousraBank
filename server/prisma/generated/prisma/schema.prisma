@@ -9,47 +9,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model users {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique
+  first_name   String?
+  last_name    String?
+  bank_account String?
+  balance      Decimal? @db.Decimal
+
+  paymentsSent     payments[] @relation("payments_sender")
+  paymentsReceived payments[] @relation("payments_recipient")
+
+  transactionsSent     Transaction[] @relation("SentTransactions")
+  transactionsReceived Transaction[] @relation("ReceivedTransactions")
+}
+
+model payments {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sender_id      String?   @db.Uuid
+  recipient_id   String    @db.Uuid
+  amount         Decimal   @db.Decimal(12, 2)
+  currency       String    @db.VarChar(3)
+  status         String    @default("pending") @db.VarChar(20)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  transaction_id String?   @unique @db.Uuid
+
+  sender    users? @relation("payments_sender", fields: [sender_id], references: [id])
+  recipient users  @relation("payments_recipient", fields: [recipient_id], references: [id])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  sender_name   String?
+  sender        users    @relation("SentTransactions", fields: [senderId], references: [id])
+  senderId      String   @db.Uuid
+  receiver      users    @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+  receiverId    String   @db.Uuid
+  amount        Float
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  receiver_name String?
+}
+
 model idempotency_keys {
   id         BigInt    @id @default(autoincrement())
   key        String    @unique
   response   Json
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-}
-
-model payments {
-  id                                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sender_id                          String?   @db.Uuid
-  recipient_id                       String    @db.Uuid
-  amount                             Decimal   @db.Decimal(12, 2)
-  currency                           String    @db.VarChar(3)
-  status                             String    @default("pending") @db.VarChar(20)
-  created_at                         DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at                         DateTime? @default(now()) @db.Timestamptz(6)
-  user_id                            String?   @db.Uuid
-  recipient_name                     String?
-  sender_name                        String?
-  sender_email                       String?
-  recipient_email                    String?
-  transaction_id                     String?   @unique @db.Uuid
-  users_payments_recipient_idTousers users     @relation("payments_recipient_idTousers", fields: [recipient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_payments_sender_idTousers    users?    @relation("payments_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_payments_user_idTousers      users?    @relation("payments_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model users {
-  id                                    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email                                 String     @unique
-  first_name                            String?
-  created_at                            DateTime?  @default(now()) @db.Timestamptz(6)
-  last_name                             String?
-  bank_account                          String?
-  user_id                               String?    @db.Uuid
-  balance                               Decimal?   @db.Decimal
-  payments_payments_recipient_idTousers payments[] @relation("payments_recipient_idTousers")
-  payments_payments_sender_idTousers    payments[] @relation("payments_sender_idTousers")
-  payments_payments_user_idTousers      payments[] @relation("payments_user_idTousers")
-  users                                 users?     @relation("usersTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_users                           users[]    @relation("usersTousers")
-
-  @@index([last_name], map: "idx_last_name")
 }

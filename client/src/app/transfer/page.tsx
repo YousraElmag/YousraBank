@@ -1,9 +1,6 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { v4 as uuidv4 } from "uuid";
-import { supabase } from "../lib/supabase";
-import "./transfer.css";
+'use client'
+import React, { useState } from "react";
+import { transferMoney } from "../components/transfer";
 
 export default function Transfer() {
   const [receverAccount, setReceverAccount] = useState("");
@@ -17,64 +14,37 @@ export default function Transfer() {
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setSuccess("");
-
     setLoading(true);
+
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      if (!token) {
-        setError("User not logged in");
-        setLoading(false);
-        return;
-      }
-
-      const idempotencyKey = uuidv4();
-
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ receverAccount, receverEmail, amount, idempotencyKey }),
+      const result = await transferMoney({
+        receverEmail,
+        receverAccount,
+        amount
       });
 
-      const data = await res.json();
+      setSuccess(result.message);
+      setBalance(result.senderBalance);
+      setReceverAccount("");
+      setReceverEmail("");
+      setAmount(0);
 
-      if (res.ok) {
-        setSuccess(data.message);
-        setBalance(data.senderBalance);
-        setReceverAccount("");
-        setReceverEmail("");
-        setAmount(0);
-      } else {
-        setError(data.error || "Something went wrong");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <h4>YousraBank</h4>
-      <h2>💸 Transfer Money</h2>
-
+    <div>
+      <h2>Transfer Money</h2>
       <form onSubmit={handleTransfer}>
-        <h2>Send to</h2>
         <input type="text" placeholder="Receiver Account" value={receverAccount} onChange={e => setReceverAccount(e.target.value)} />
         <input type="email" placeholder="Receiver Email" value={receverEmail} onChange={e => setReceverEmail(e.target.value)} />
-
-        <h2>Amount</h2>
         <input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(Number(e.target.value))} required />
-
         <button type="submit" disabled={loading}>{loading ? "Processing..." : "Send Money"}</button>
-        <Link href="/userdash"><button type="button">Cancel</button></Link>
       </form>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       {balance !== null && <p>Your Balance: {balance} EUR</p>}

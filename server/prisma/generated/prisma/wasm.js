@@ -35,11 +35,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.1
+ * Prisma Client JS version: 6.16.2
  * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.16.1",
+  client: "6.16.2",
   engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
@@ -92,11 +92,13 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.Idempotency_keysScalarFieldEnum = {
+exports.Prisma.UsersScalarFieldEnum = {
   id: 'id',
-  key: 'key',
-  response: 'response',
-  created_at: 'created_at'
+  email: 'email',
+  first_name: 'first_name',
+  last_name: 'last_name',
+  bank_account: 'bank_account',
+  balance: 'balance'
 };
 
 exports.Prisma.PaymentsScalarFieldEnum = {
@@ -108,23 +110,26 @@ exports.Prisma.PaymentsScalarFieldEnum = {
   status: 'status',
   created_at: 'created_at',
   updated_at: 'updated_at',
-  user_id: 'user_id',
-  recipient_name: 'recipient_name',
-  sender_name: 'sender_name',
-  sender_email: 'sender_email',
-  recipient_email: 'recipient_email',
   transaction_id: 'transaction_id'
 };
 
-exports.Prisma.UsersScalarFieldEnum = {
+exports.Prisma.TransactionScalarFieldEnum = {
   id: 'id',
-  email: 'email',
-  first_name: 'first_name',
-  created_at: 'created_at',
-  last_name: 'last_name',
-  bank_account: 'bank_account',
-  user_id: 'user_id',
-  balance: 'balance'
+  sender_name: 'sender_name',
+  senderId: 'senderId',
+  receiverId: 'receiverId',
+  amount: 'amount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  receiver_name: 'receiver_name'
+};
+
+exports.Prisma.Idempotency_keysScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  response: 'response',
+  created_at: 'created_at'
 };
 
 exports.Prisma.SortOrder = {
@@ -141,22 +146,23 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
 
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
-};
-
 
 exports.Prisma.ModelName = {
-  idempotency_keys: 'idempotency_keys',
+  users: 'users',
   payments: 'payments',
-  users: 'users'
+  Transaction: 'Transaction',
+  idempotency_keys: 'idempotency_keys'
 };
 /**
  * Create the Client
@@ -195,7 +201,7 @@ const config = {
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../..",
-  "clientVersion": "6.16.1",
+  "clientVersion": "6.16.2",
   "engineVersion": "1c57fdcd7e44b29b9313256c76699e91c3ac3c43",
   "datasourceNames": [
     "db"
@@ -210,13 +216,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"./generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel idempotency_keys {\n  id         BigInt    @id @default(autoincrement())\n  key        String    @unique\n  response   Json\n  created_at DateTime? @default(now()) @db.Timestamptz(6)\n}\n\nmodel payments {\n  id                                 String    @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  sender_id                          String?   @db.Uuid\n  recipient_id                       String    @db.Uuid\n  amount                             Decimal   @db.Decimal(12, 2)\n  currency                           String    @db.VarChar(3)\n  status                             String    @default(\"pending\") @db.VarChar(20)\n  created_at                         DateTime? @default(now()) @db.Timestamptz(6)\n  updated_at                         DateTime? @default(now()) @db.Timestamptz(6)\n  user_id                            String?   @db.Uuid\n  recipient_name                     String?\n  sender_name                        String?\n  sender_email                       String?\n  recipient_email                    String?\n  transaction_id                     String?   @unique @db.Uuid\n  users_payments_recipient_idTousers users     @relation(\"payments_recipient_idTousers\", fields: [recipient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  users_payments_sender_idTousers    users?    @relation(\"payments_sender_idTousers\", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  users_payments_user_idTousers      users?    @relation(\"payments_user_idTousers\", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel users {\n  id                                    String     @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  email                                 String     @unique\n  first_name                            String?\n  created_at                            DateTime?  @default(now()) @db.Timestamptz(6)\n  last_name                             String?\n  bank_account                          String?\n  user_id                               String?    @db.Uuid\n  balance                               Decimal?   @db.Decimal\n  payments_payments_recipient_idTousers payments[] @relation(\"payments_recipient_idTousers\")\n  payments_payments_sender_idTousers    payments[] @relation(\"payments_sender_idTousers\")\n  payments_payments_user_idTousers      payments[] @relation(\"payments_user_idTousers\")\n  users                                 users?     @relation(\"usersTousers\", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  other_users                           users[]    @relation(\"usersTousers\")\n\n  @@index([last_name], map: \"idx_last_name\")\n}\n",
-  "inlineSchemaHash": "fd8bfe88c41b951faa78e809656641ebc3e43a39e655a8a670b6ff830b7301cd",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"./generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel users {\n  id           String   @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  email        String   @unique\n  first_name   String?\n  last_name    String?\n  bank_account String?\n  balance      Decimal? @db.Decimal\n\n  paymentsSent     payments[] @relation(\"payments_sender\")\n  paymentsReceived payments[] @relation(\"payments_recipient\")\n\n  transactionsSent     Transaction[] @relation(\"SentTransactions\")\n  transactionsReceived Transaction[] @relation(\"ReceivedTransactions\")\n}\n\nmodel payments {\n  id             String    @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  sender_id      String?   @db.Uuid\n  recipient_id   String    @db.Uuid\n  amount         Decimal   @db.Decimal(12, 2)\n  currency       String    @db.VarChar(3)\n  status         String    @default(\"pending\") @db.VarChar(20)\n  created_at     DateTime? @default(now()) @db.Timestamptz(6)\n  updated_at     DateTime? @default(now()) @db.Timestamptz(6)\n  transaction_id String?   @unique @db.Uuid\n\n  sender    users? @relation(\"payments_sender\", fields: [sender_id], references: [id])\n  recipient users  @relation(\"payments_recipient\", fields: [recipient_id], references: [id])\n}\n\nmodel Transaction {\n  id            String   @id @default(cuid())\n  sender_name   String?\n  sender        users    @relation(\"SentTransactions\", fields: [senderId], references: [id])\n  senderId      String   @db.Uuid\n  receiver      users    @relation(\"ReceivedTransactions\", fields: [receiverId], references: [id])\n  receiverId    String   @db.Uuid\n  amount        Float\n  status        String   @default(\"pending\")\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n  receiver_name String?\n}\n\nmodel idempotency_keys {\n  id         BigInt    @id @default(autoincrement())\n  key        String    @unique\n  response   Json\n  created_at DateTime? @default(now()) @db.Timestamptz(6)\n}\n",
+  "inlineSchemaHash": "5c4c95b4376ad08b4621823699d2559bcb46e8b0f4690a03b076eb4fb27abc24",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"idempotency_keys\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"response\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"payments\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recipient_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recipient_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender_email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recipient_email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"transaction_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"users_payments_recipient_idTousers\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"payments_recipient_idTousers\"},{\"name\":\"users_payments_sender_idTousers\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"payments_sender_idTousers\"},{\"name\":\"users_payments_user_idTousers\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"payments_user_idTousers\"}],\"dbName\":null},\"users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"first_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"last_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bank_account\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"balance\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"payments_payments_recipient_idTousers\",\"kind\":\"object\",\"type\":\"payments\",\"relationName\":\"payments_recipient_idTousers\"},{\"name\":\"payments_payments_sender_idTousers\",\"kind\":\"object\",\"type\":\"payments\",\"relationName\":\"payments_sender_idTousers\"},{\"name\":\"payments_payments_user_idTousers\",\"kind\":\"object\",\"type\":\"payments\",\"relationName\":\"payments_user_idTousers\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"usersTousers\"},{\"name\":\"other_users\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"usersTousers\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"first_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"last_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bank_account\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"balance\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"paymentsSent\",\"kind\":\"object\",\"type\":\"payments\",\"relationName\":\"payments_sender\"},{\"name\":\"paymentsReceived\",\"kind\":\"object\",\"type\":\"payments\",\"relationName\":\"payments_recipient\"},{\"name\":\"transactionsSent\",\"kind\":\"object\",\"type\":\"Transaction\",\"relationName\":\"SentTransactions\"},{\"name\":\"transactionsReceived\",\"kind\":\"object\",\"type\":\"Transaction\",\"relationName\":\"ReceivedTransactions\"}],\"dbName\":null},\"payments\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recipient_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"transaction_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"payments_sender\"},{\"name\":\"recipient\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"payments_recipient\"}],\"dbName\":null},\"Transaction\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"SentTransactions\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiver\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"ReceivedTransactions\"},{\"name\":\"receiverId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"receiver_name\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null},\"idempotency_keys\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"response\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

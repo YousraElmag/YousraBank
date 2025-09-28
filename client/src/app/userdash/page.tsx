@@ -80,7 +80,7 @@ const [payments, setPayments] = useState<any[]>([]);
             <span className="icon">💸</span>
          <span className="title">Transfer Money</span>
           </button></Link> 
-          <Link href='/request'>
+          <Link href='/requestmoney'>
           <button className="action-card">
             <span className="icon">💰</span>
             <span className="title">Request Transfer</span>

@@ -20,11 +20,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.1
+ * Prisma Client JS version: 6.16.2
  * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.16.1",
+  client: "6.16.2",
   engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
@@ -120,11 +120,13 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.Idempotency_keysScalarFieldEnum = {
+exports.Prisma.UsersScalarFieldEnum = {
   id: 'id',
-  key: 'key',
-  response: 'response',
-  created_at: 'created_at'
+  email: 'email',
+  first_name: 'first_name',
+  last_name: 'last_name',
+  bank_account: 'bank_account',
+  balance: 'balance'
 };
 
 exports.Prisma.PaymentsScalarFieldEnum = {
@@ -136,23 +138,26 @@ exports.Prisma.PaymentsScalarFieldEnum = {
   status: 'status',
   created_at: 'created_at',
   updated_at: 'updated_at',
-  user_id: 'user_id',
-  recipient_name: 'recipient_name',
-  sender_name: 'sender_name',
-  sender_email: 'sender_email',
-  recipient_email: 'recipient_email',
   transaction_id: 'transaction_id'
 };
 
-exports.Prisma.UsersScalarFieldEnum = {
+exports.Prisma.TransactionScalarFieldEnum = {
   id: 'id',
-  email: 'email',
-  first_name: 'first_name',
-  created_at: 'created_at',
-  last_name: 'last_name',
-  bank_account: 'bank_account',
-  user_id: 'user_id',
-  balance: 'balance'
+  sender_name: 'sender_name',
+  senderId: 'senderId',
+  receiverId: 'receiverId',
+  amount: 'amount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  receiver_name: 'receiver_name'
+};
+
+exports.Prisma.Idempotency_keysScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  response: 'response',
+  created_at: 'created_at'
 };
 
 exports.Prisma.SortOrder = {
@@ -169,22 +174,23 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
 
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
-};
-
 
 exports.Prisma.ModelName = {
-  idempotency_keys: 'idempotency_keys',
+  users: 'users',
   payments: 'payments',
-  users: 'users'
+  Transaction: 'Transaction',
+  idempotency_keys: 'idempotency_keys'
 };
 
 /**
