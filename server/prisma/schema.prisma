@@ -1,4 +1,3 @@
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -10,18 +9,16 @@ datasource db {
 }
 
 model users {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email        String   @unique
-  first_name   String?
-  last_name    String?
-  bank_account String?
-  balance      Decimal? @db.Decimal
-
-  paymentsSent     payments[] @relation("payments_sender")
-  paymentsReceived payments[] @relation("payments_recipient")
-
-  transactionsSent     Transaction[] @relation("SentTransactions")
+  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                String        @unique
+  first_name           String?
+  last_name            String?
+  bank_account         String?
+  balance              Decimal?      @db.Decimal
   transactionsReceived Transaction[] @relation("ReceivedTransactions")
+  transactionsSent     Transaction[] @relation("SentTransactions")
+  paymentsReceived     payments[]    @relation("payments_recipient")
+  paymentsSent         payments[]    @relation("payments_sender")
 }
 
 model payments {
@@ -34,23 +31,22 @@ model payments {
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   updated_at     DateTime? @default(now()) @db.Timestamptz(6)
   transaction_id String?   @unique @db.Uuid
-
-  sender    users? @relation("payments_sender", fields: [sender_id], references: [id])
-  recipient users  @relation("payments_recipient", fields: [recipient_id], references: [id])
+  recipient      users     @relation("payments_recipient", fields: [recipient_id], references: [id])
+  sender         users?    @relation("payments_sender", fields: [sender_id], references: [id])
 }
 
 model Transaction {
-  id           String   @id @default(cuid())
-  sender_name  String?
-  sender       users    @relation("SentTransactions", fields: [senderId], references: [id])
-  senderId     String   @db.Uuid
-  receiver     users    @relation("ReceivedTransactions", fields: [receiverId], references: [id])
-  receiverId   String   @db.Uuid
-  amount       Float
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  receiver_name String?
+  id            String   @id @default(cuid())
+  amount        Float
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  receiver_name String
+  sender_name   String
+  senderId      String   @db.Uuid
+  receiverId    String   @db.Uuid
+  receiver      users    @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+  sender        users    @relation("SentTransactions", fields: [senderId], references: [id])
 }
 
 model idempotency_keys {
