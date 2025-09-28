@@ -9,6 +9,7 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["server/**/*.ts", "prisma/generated/**/*.ts"],
+  "include": ["server.ts", "controle/**/*.ts", "routes/**/*.ts", "prisma/generated/**/*.ts"],
   "exclude": ["node_modules", "dist"]
+
 }
