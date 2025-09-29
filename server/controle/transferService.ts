@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import prisma from "../prisma";
 import { supabase } from "../lib/supabase";
 import { Prisma } from "@prisma/client";
+
+const { v4: uuidv4 } = require("uuid");
 
 
 export const transferMoney = async (req: Request, res: Response) => {
