@@ -5,12 +5,12 @@ import { transferMoney } from "../components/transfer";
 
 interface Transaction {
   id: string;
-  senderId: string;
-  receiverId: string;
+  senderid: string;
+  receiverid: string;
   amount: number;
   status: string;
-  createdAt: string;
-  updatedAt: string;
+  createdat: string;
+  updatedat: string;
   receiver_name: string;
   sender_name: string;
 }
@@ -37,12 +37,12 @@ export default function RequestMessage() {
     fetchRequests(userid);
   };
 
-  const fetchRequests = async (userId: string) => {
+  const fetchRequests = async (userid: string) => {
     const { data, error } = await supabase
-      .from<"Transaction", Transaction>("Transaction")
+      .from<"transaction", Transaction>("transaction")
       .select("*")
-      .or(`receiverId.eq.${userId},senderId.eq.${userId}`)
-      .order("createdAt", { ascending: false });
+      .or(`receiverid.eq.${userid},senderid.eq.${userid}`)
+      .order("createdat", { ascending: false });
 
     if (error) {
       setError(error.message);
@@ -57,7 +57,7 @@ export default function RequestMessage() {
       const { data: receiver, error } = await supabase
         .from("users")
         .select("email, bank_account")
-        .eq("id", req.receiverId)
+        .eq("id", req.receiverid)
         .single();
 
       if (error || !receiver) {
@@ -73,7 +73,7 @@ export default function RequestMessage() {
 
       console.log("Transfer result:", result);
       await supabase
-        .from("Transaction")
+        .from("transaction")
         .update({ status: "completed" })
         .eq("id", req.id);
       fetchRequests(user!);
@@ -86,7 +86,7 @@ export default function RequestMessage() {
     setError("");
     try {
       await supabase
-        .from("Transaction")
+        .from("transaction")
         .update({ status: "rejected" })
         .eq("id", req.id);
 
@@ -105,7 +105,7 @@ export default function RequestMessage() {
 
       <ul>
         {requests.map((req) => {
-          const isSender = req.senderId === user;
+          const isSender = req.senderid === user;
           return (
             <li key={req.id} style={{ marginBottom: "10px" }}>
               <p>
@@ -113,7 +113,7 @@ export default function RequestMessage() {
                 {isSender ? req.receiver_name : req.sender_name} <br />
                 <strong>Amount:</strong> {req.amount} EUR <br />
                 <strong>Status:</strong> {req.status} <br />
-                <strong>Date:</strong> {new Date(req.createdAt).toLocaleString()}
+                <strong>Date:</strong> {new Date(req.createdat).toLocaleString()}
               </p>
 
               {!isSender && req.status === "pending" && (
