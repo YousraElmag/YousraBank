@@ -23,12 +23,14 @@ export const requestMoney = async (req: Request, res: Response) => {
 
     const request = await prisma.transaction.create({
       data: {
-        senderId: sender.id,
-        sender_name:sender.first_name??"unknown",
-        receiverId: receiver.id,
-        receiver_name:receiver.first_name??'unknown',
-        amount,
-        status: "pending",
+  
+    senderid: sender.id,           
+    sender_name: sender.first_name ?? "unknown",
+    receiverid: receiver.id,         
+    receiver_name: receiver.first_name ?? 'unknown',
+    amount,
+    status: "pending",
+ 
       },
     });
 
