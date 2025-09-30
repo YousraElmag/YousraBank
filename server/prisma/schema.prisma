@@ -9,16 +9,16 @@ datasource db {
 }
 
 model users {
-  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email                String        @unique
-  first_name           String?
-  last_name            String?
-  bank_account         String?
-  balance              Decimal?      @db.Decimal
-  transactionsReceived Transaction[] @relation("ReceivedTransactions")
-  transactionsSent     Transaction[] @relation("SentTransactions")
-  paymentsReceived     payments[]    @relation("payments_recipient")
-  paymentsSent         payments[]    @relation("payments_sender")
+  id                                        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                                     String        @unique
+  first_name                                String?
+  last_name                                 String?
+  bank_account                              String?
+  balance                                   Decimal?      @db.Decimal
+  paymentsReceived                          payments[]    @relation("payments_recipient")
+  paymentsSent                              payments[]    @relation("payments_sender")
+  transaction_transaction_receiveridTousers transaction[] @relation("transaction_receiveridTousers")
+  transaction_transaction_senderidTousers   transaction[] @relation("transaction_senderidTousers")
 }
 
 model payments {
@@ -27,31 +27,31 @@ model payments {
   recipient_id   String    @db.Uuid
   amount         Decimal   @db.Decimal(12, 2)
   currency       String    @db.VarChar(3)
-  status         String    @default("pending") @db.VarChar(20)
+  status         String?   @default("pending") @db.VarChar(20)
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   updated_at     DateTime? @default(now()) @db.Timestamptz(6)
   transaction_id String?   @unique @db.Uuid
-  recipient      users     @relation("payments_recipient", fields: [recipient_id], references: [id])
-  sender         users?    @relation("payments_sender", fields: [sender_id], references: [id])
-}
-
-model Transaction {
-  id            String   @id @default(cuid())
-  amount        Float
-  status        String   @default("pending")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  receiver_name String
-  sender_name   String
-  senderId      String   @db.Uuid
-  receiverId    String   @db.Uuid
-  receiver      users    @relation("ReceivedTransactions", fields: [receiverId], references: [id])
-  sender        users    @relation("SentTransactions", fields: [senderId], references: [id])
+  recipient      users     @relation("payments_recipient", fields: [recipient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sender         users?    @relation("payments_sender", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model idempotency_keys {
   id         BigInt    @id @default(autoincrement())
-  key        String    @unique
-  response   Json
+  key        String?   @unique
+  response   Json?     @db.Json
   created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model transaction {
+  id                                  String    @id @default(dbgenerated("gen_random_uuid()"))
+  amount                              Float
+  status                              String?   @default("pending")
+  createdat                           DateTime? @default(now()) @db.Timestamptz(6)
+  updatedat                           DateTime? @default(now()) @db.Timestamptz(6)
+  receiver_name                       String?
+  sender_name                         String?
+  senderid                            String    @db.Uuid
+  receiverid                          String    @db.Uuid
+  users_transaction_receiveridTousers users     @relation("transaction_receiveridTousers", fields: [receiverid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_transaction_senderidTousers   users     @relation("transaction_senderidTousers", fields: [senderid], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
