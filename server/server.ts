@@ -6,12 +6,8 @@ import authRoutes from "./routes/auth";
 
 const app = express();
 
-
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://yousra-bank.vercel.app"
-  ],
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
