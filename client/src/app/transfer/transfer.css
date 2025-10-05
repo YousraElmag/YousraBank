@@ -42,17 +42,23 @@ body {
 
 }
 form{
-    margin: 30px;
-    display: flex
+    background: #3ba9c7;
+    border-radius: 30px;
+    width: 400px;
+    height: 350px;
+    margin: 20px auto;
+    padding: 40px;
+    display: grid
 ;
-    flex-direction: column;
+    box-shadow: 14px 12px 22px #eae6de;
+
 }
 form input{
-        background: aliceblue;
-    border: 1px solid lightblue;
-    padding-left: 20px;
+    background: #f0f8ff;
+    border: 1px solid #add8e6;
+    margin-bottom: 5px;
     margin-left: 10px;
-    margin-bottom: 20px;
+    padding-left: 20px;
 }
 form button{
         cursor: pointer;

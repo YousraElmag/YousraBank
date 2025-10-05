@@ -31,7 +31,7 @@ export default function RequestMoney() {
 
       const idempotencyKey = uuidv4();
 
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/request", {
+      const res = await fetch("http://localhost:5000/api/auth/request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
