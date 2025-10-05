@@ -68,7 +68,7 @@ body {
   justify-content: space-between;
   background: antiquewhite;
   width: 1000px;
-  margin: 20px auto;
+  margin: 20px auto
 }
 .landing::after {
   position: absolute;
