@@ -71,7 +71,7 @@ export default function Transfer() {
         <button type="submit" disabled={loading}>{loading ? "Processing..." : "Send Money"}</button>
       </form>
      <div style={{ marginTop: "50px", fontFamily: "revert", fontSize: "18px" }}>
-  {error && <p style={{ color: "red" ,fontSize:'30px'}}>{error}</p>}
+  {error && <p style={{ color: "#da2929" ,fontSize:'30px'}}>{error}</p>}
   {success && <p style={{ color: "green" ,fontSize:"30px"}}>{success}</p>}
   {balance !== null && <p style={{marginTop: "20px",
     color: "antiquewhite",

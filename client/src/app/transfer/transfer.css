@@ -42,7 +42,7 @@ body {
 
 }
 form{
-    background: #3ba9c7;
+    background: #71b4c7;
     border-radius: 30px;
     width: 400px;
     height: 350px;
@@ -50,7 +50,7 @@ form{
     padding: 40px;
     display: grid
 ;
-    box-shadow: 14px 12px 22px #eae6de;
+    box-shadow: 14px 12px 22px ;
 
 }
 form input{
@@ -62,7 +62,7 @@ form input{
 }
 form button{
         cursor: pointer;
-    background: #2d95f1;
+       box-shadow: 1px 0px 5px white;
     width: fit-content;
     margin: 20px auto;
     color: white;
