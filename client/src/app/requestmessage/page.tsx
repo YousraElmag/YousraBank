@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { transferMoney } from "../components/transfer";
+import  Navbar from "../components/Navbar/Navbar"
 
 interface Transaction {
   id: string;
@@ -97,7 +98,15 @@ export default function RequestMessage() {
   };
 
   return (
-    <div className="container">
+    <>
+    <Navbar/>
+    <div className="container" style={{ height: "fit-content",
+    margin: "20px auto",
+    width: "500px",
+    textAlign: "center",
+    background:" aliceblue",
+    boxShadow:"2px 2px 16px white"
+}}>
       <h2>💸 Money Requests</h2>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -149,5 +158,6 @@ export default function RequestMessage() {
         })}
       </ul>
     </div>
+    </>
   );
 }
