@@ -14,7 +14,7 @@ export async function transferMoney({ receverEmail, receverAccount, amount }: Tr
 
   const idempotencyKey = uuidv4();
 
-  const res = await fetch("http://localhost:5000/api/auth/send", {
+  const res = await fetch("https://yousrabank.onrender.com/api/auth/send", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
