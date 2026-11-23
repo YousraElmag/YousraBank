@@ -55,20 +55,20 @@ export default function RequestMessage() {
   const handleAgree = async (req: Transaction) => {
     setError("");
     try {
-      const { data: receiver, error } = await supabase
+      // The person who SENT the request is the one who should RECEIVE the money.
+      const { data: requester, error } = await supabase
         .from("users")
-        .select("email, bank_account")
-        .eq("id", req.receiverid)
+        .select("email")
+        .eq("id", req.senderid)
         .single();
 
-      if (error || !receiver) {
-        setError("Receiver not found");
+      if (error || !requester) {
+        setError("Requester not found");
         return;
       }
 
       const result = await transferMoney({
-        receverEmail: receiver.email,
-        receverAccount: receiver.bank_account,
+        receverEmail: requester.email,
         amount: req.amount,
       });
 

@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { v4 as uuidv4 } from "uuid";
+import { API_URL } from "../lib/api";
 
 interface TransferData {
   receverEmail?: string;
@@ -14,7 +15,7 @@ export async function transferMoney({ receverEmail, receverAccount, amount }: Tr
 
   const idempotencyKey = uuidv4();
 
-  const res = await fetch("https://yousrabank.onrender.com/api/auth/send", {
+  const res = await fetch(`${API_URL}/api/auth/send`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

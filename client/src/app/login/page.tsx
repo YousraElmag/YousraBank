@@ -28,10 +28,6 @@ export default function Login() {
         setError(error.message);
         return;
       }
-      if (data.session) {
-        const token = data.session.access_token;
-        console.log("User token:", token);
-      }
       if (data.user) {
         alert("WELCOME");
         router.push("/userdash");

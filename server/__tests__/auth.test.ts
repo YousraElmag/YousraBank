@@ -12,6 +12,11 @@ jest.mock("../lib/supabase", () => ({
     },
     from: jest.fn(() => ({
       insert: jest.fn().mockResolvedValue({ error: null }),
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        })),
+      })),
     })),
   },
 }));

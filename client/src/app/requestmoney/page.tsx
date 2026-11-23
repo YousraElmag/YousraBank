@@ -1,15 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { v4 as uuidv4 } from "uuid";
 import { supabase } from "../lib/supabase";
+import { API_URL } from "../lib/api";
 
 export default function RequestMoney() {
   const [receiverEmail, setReceiverEmail] = useState("");
   const [amount, setAmount] = useState<number>(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [balance, setBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleTransfer = async (e: React.FormEvent) => {
@@ -25,13 +24,10 @@ export default function RequestMoney() {
 
       if (!token || !senderEmail) {
         setError("User not logged in");
-        setLoading(false);
         return;
       }
 
-      const idempotencyKey = uuidv4();
-
-      const res = await fetch("https://yousrabank.onrender.com/api/auth/request", {
+      const res = await fetch(`${API_URL}/api/auth/request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,8 +35,7 @@ export default function RequestMoney() {
         },
         body: JSON.stringify({
           receiverEmail,
-    amount,
-    idempotencyKey,
+          amount,
         }),
       });
 
@@ -48,7 +43,6 @@ export default function RequestMoney() {
 
       if (res.ok) {
         setSuccess(data.message);
-        setBalance(data.senderBalance);
         setReceiverEmail("");
         setAmount(0);
       } else {
@@ -87,7 +81,7 @@ export default function RequestMoney() {
         />
 
         <button type="submit" disabled={loading}>
-          {loading ? "Processing..." : "Send Money"}
+          {loading ? "Processing..." : "Send Request"}
         </button>
         <Link href="/userdash">
           <button type="button">Cancel</button>
@@ -96,7 +90,6 @@ export default function RequestMoney() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
-      {balance !== null && <p>Your Balance: {balance} EUR</p>}
     </div>
   );
 }

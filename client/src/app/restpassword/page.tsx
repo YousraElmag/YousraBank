@@ -2,6 +2,7 @@
 import { useState } from "react";
 import "./rest.css";
 import Navbar from "../components/Navbar/Navbar";
+import { API_URL } from "../lib/api";
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
 
@@ -10,7 +11,7 @@ export default function ResetPassword() {
 
     try {
       const res = await fetch(
-        `https://yousrabank.onrender.com/api/auth/reset-password`,
+        `${API_URL}/api/auth/reset-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

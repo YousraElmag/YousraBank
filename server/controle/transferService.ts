@@ -1,29 +1,38 @@
 import { Request, Response } from "express";
-// import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import prisma from "../prisma";
 import { supabase } from "../lib/supabase";
 import { Prisma } from "@prisma/client";
 
-const { v4: uuidv4 } = require("uuid");
-
+// Errors we expect (bad input, not enough money...). These return 400/404, not 500.
+class TransferError extends Error {
+  constructor(message: string, public status: number = 400) {
+    super(message);
+  }
+}
 
 export const transferMoney = async (req: Request, res: Response) => {
-
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ error: "No token provided" });
 
     const { receverAccount, receverEmail, amount, idempotencyKey } = req.body;
-    if ((!receverAccount && !receverEmail) || !amount || amount <= 0) {
+
+    // Amount must be a real positive number (a string like "100" would break the maths).
+    if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
+    if (!receverAccount && !receverEmail) {
       return res.status(400).json({ error: "Invalid input" });
     }
     if (!idempotencyKey) return res.status(400).json({ error: "Idempotency key required" });
+
+    const value = Math.round(amount * 100) / 100; // max 2 decimals (cents)
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-
     const senderId = user.id;
 
     const existingKey = await prisma.idempotency_keys.findUnique({
@@ -31,41 +40,51 @@ export const transferMoney = async (req: Request, res: Response) => {
     });
     if (existingKey) return res.json(existingKey.response);
 
+    // Only search on the fields the user really filled in.
+    // (An empty/undefined field in an OR would match the wrong user.)
+    const receiverFilters: Prisma.usersWhereInput[] = [];
+    if (receverAccount) receiverFilters.push({ bank_account: String(receverAccount) });
+    if (receverEmail) receiverFilters.push({ email: String(receverEmail) });
+
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const sender = await tx.users.findUnique({ where: { id: senderId } });
-      if (!sender) throw new Error("Sender not found");
-      if ((sender.balance?.toNumber() || 0) < amount) throw new Error("Insufficient funds");
+      const receiver = await tx.users.findFirst({ where: { OR: receiverFilters } });
+      if (!receiver) throw new TransferError("Receiver not found", 404);
+      if (receiver.id === senderId) throw new TransferError("You cannot send money to yourself");
 
-      const receiver = await tx.users.findFirst({
-        where: {
-          OR: [
-            { bank_account: receverAccount },
-            { email: receverEmail },
-          ],
-        },
+      // Atomic update: only takes the money if the balance is high enough.
+      // This also prevents double spending when two requests arrive at the same time.
+      const debit = await tx.users.updateMany({
+        where: { id: senderId, balance: { gte: value } },
+        data: { balance: { decrement: value } },
       });
-      if (!receiver) throw new Error("Receiver not found");
+      if (debit.count === 0) {
+        const exists = await tx.users.findUnique({ where: { id: senderId } });
+        if (!exists) throw new TransferError("Sender not found", 404);
+        throw new TransferError("Insufficient funds");
+      }
 
-      const newSenderBalance = (sender.balance?.toNumber() || 0) - amount;
-      const newReceiverBalance = (receiver.balance?.toNumber() || 0) + amount;
-
-      await tx.users.update({ where: { id: sender.id }, data: { balance: newSenderBalance } });
-      await tx.users.update({ where: { id: receiver.id }, data: { balance: newReceiverBalance } });
+      await tx.users.update({
+        where: { id: receiver.id },
+        data: { balance: { increment: value } },
+      });
 
       const transactionId = uuidv4();
       await tx.payments.create({
         data: {
-          sender_id: sender.id,
+          sender_id: senderId,
           recipient_id: receiver.id,
-          amount,
+          amount: value,
           currency: "EUR",
+          status: "completed",
           transaction_id: transactionId,
         },
       });
 
+      const sender = await tx.users.findUnique({ where: { id: senderId } });
+
       const transferResult = {
         transactionId,
-        senderBalance: newSenderBalance,
+        senderBalance: sender?.balance?.toNumber() ?? 0,
         success: true,
         message: "Transfer completed successfully",
       };
@@ -77,8 +96,10 @@ export const transferMoney = async (req: Request, res: Response) => {
 
     res.json(result);
   } catch (err: any) {
-
-    console.error("Transfer error:", err.message);
-    res.status(500).json({ error: err.message });
+    if (err instanceof TransferError) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    console.error("Transfer error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

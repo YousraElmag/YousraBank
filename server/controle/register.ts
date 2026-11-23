@@ -13,6 +13,10 @@ function generateBankAccount() {
 export async function Register(req: Request, res: Response) {
   const { email, password, firstname, lastname } = req.body;
 
+  if (!email || !password || !firstname || !lastname) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -26,7 +30,17 @@ export async function Register(req: Request, res: Response) {
     if (error) return res.status(400).json({ error: error.message });
     if (!data.user) return res.status(400).json({ error: "User not created" });
 
-    const bankAccount = generateBankAccount();
+    // Make sure the account number is not already used by another user.
+    let bankAccount = generateBankAccount();
+    for (let tries = 0; tries < 5; tries++) {
+      const { data: existing } = await supabase
+        .from("users")
+        .select("id")
+        .eq("bank_account", bankAccount)
+        .maybeSingle();
+      if (!existing) break;
+      bankAccount = generateBankAccount();
+    }
 
     const { error: insertUserError } = await supabase.from("users").insert([
       {

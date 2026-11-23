@@ -87,7 +87,7 @@ const [payments, setPayments] = useState<any[]>([]);
           </button></Link>
           <div className="action-card balance-card">
             <span className="title">Account Balance</span>
-            <span className="amount">${useraccount?.balance || 0}</span>
+            <span className="amount">€{useraccount?.balance || 0}</span>
           </div>
         </div>
 
@@ -102,11 +102,11 @@ const [payments, setPayments] = useState<any[]>([]);
         <li key={p.id}>
           {p.sender_id === user?.id ? (
             <span style={{ color: "red" }}>
-              -${p.amount} → {p.recipient.first_name} {p.recipient.last_name}
+              -€{p.amount} → {p.recipient?.first_name} {p.recipient?.last_name}
             </span>
           ) : (
             <span style={{ color: "green" }}>
-              +${p.amount} ← {p.sender.first_name} {p.sender.last_name}
+              +€{p.amount} ← {p.sender?.first_name ?? "Unknown"} {p.sender?.last_name}
             </span>
           )}
         </li>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
+import { API_URL } from "../lib/api";
 
 import "./page.css";
 export default function Register() {
@@ -28,7 +29,7 @@ export default function Register() {
     setMessage("");
 
     try {
-      const res = await fetch(`https://yousrabank.onrender.com/api/auth/register`,
+      const res = await fetch(`${API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

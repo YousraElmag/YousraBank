@@ -8,16 +8,12 @@ import authRoutes from "./routes/auth";
 config(); // قراءة متغيرات البيئة
 
 const app = express();
-app.get("/metrics", async (req, res) => {
-  res.set("Content-Type", register.contentType);
-  res.end(await register.metrics());
-});
 // --- إعداد CORS ---
 app.use(
   cors({
-    origin: "*",
+    // Set CLIENT_ORIGIN in .env (for example https://yousra-bank.vercel.app) to only allow your frontend.
+    origin: process.env.CLIENT_ORIGIN || "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
   })
 );
 
