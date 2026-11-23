@@ -30,6 +30,12 @@ export async function Register(req: Request, res: Response) {
     if (error) return res.status(400).json({ error: error.message });
     if (!data.user) return res.status(400).json({ error: "User not created" });
 
+    // If the email is already registered, Supabase returns a "fake" user with no identities
+    // and a random id. Do NOT save that id in our users table.
+    if (data.user.identities && data.user.identities.length === 0) {
+      return res.status(400).json({ error: "This email is already registered. Please log in." });
+    }
+
     // Make sure the account number is not already used by another user.
     let bankAccount = generateBankAccount();
     for (let tries = 0; tries < 5; tries++) {
