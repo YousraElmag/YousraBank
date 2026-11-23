@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar/Navbar";
 import { supabase } from "../lib/supabase";
-import "./page.css";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,77 +12,58 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handelregist = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(error.message);
         return;
       }
-      if (data.user) {
-        alert("WELCOME");
-        router.push("/userdash");
-      }
-    } catch (err) {
+      if (data.user) router.push("/userdash");
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h3 className="text-center text-2xl font-bold mb-5 text-black">
-          YOUSRABANK
-        </h3>
+      <main className="auth-wrap">
+        <div className="card auth-card">
+          <h1>Welcome back</h1>
+          <p className="subtitle">Log in to your YousraBank account.</p>
 
-        <form onSubmit={handelregist} className="registform">
-          <input
-            type="email"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className=""
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className=""
-          />
+          <form onSubmit={handleLogin} className="form">
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input id="email" className="input" type="email" placeholder="you@example.com"
+                value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            </div>
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input id="password" className="input" type="password" placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+              <Link href="/restpassword" className="hint" style={{ alignSelf: "flex-end" }}>Forgot password?</Link>
+            </div>
 
-          {error && (
-            <p className="text-red-600 text-sm font-semibold">{error}</p>
-          )}
+            {error && <div className="alert alert-error">{error}</div>}
 
-          <button type="submit" disabled={loading} className="">
-            {loading ? "Log in..." : "Log in"}
-          </button>
-        </form>
+            <button type="submit" disabled={loading} className="btn btn-primary btn-block">
+              {loading ? "Logging in..." : "Log in"}
+            </button>
+          </form>
 
-        <div className="text-center mt-4 text-sm text-gray-700">
-          Forget your password?{" "}
-          <Link
-            href="/restpassword"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            resetpasswod
-          </Link>
+          <p className="auth-footer">
+            New to YousraBank? <Link href="/register">Open an account</Link>
+          </p>
         </div>
-      </div>
+      </main>
     </>
   );
 }

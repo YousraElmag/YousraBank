@@ -1,12 +1,14 @@
-'use client'
+"use client";
 import React, { useState } from "react";
-import { transferMoney } from "../components/transfer";
-import './transfer.css';
+import Link from "next/link";
 import Navbar from "../components/Navbar/Navbar";
+import { transferMoney } from "../components/transfer";
+import { formatMoney } from "../lib/format";
+
 export default function Transfer() {
   const [receverAccount, setReceverAccount] = useState("");
   const [receverEmail, setReceverEmail] = useState("");
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
@@ -14,22 +16,31 @@ export default function Transfer() {
 
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); setSuccess("");
-    setLoading(true);
+    setError("");
+    setSuccess("");
 
+    const value = Number(amount.replace(",", "."));
+    if (!value || value <= 0) {
+      setError("Please enter an amount greater than 0");
+      return;
+    }
+    if (!receverAccount && !receverEmail) {
+      setError("Please enter an account number or an email");
+      return;
+    }
+
+    setLoading(true);
     try {
       const result = await transferMoney({
-        receverEmail,
-        receverAccount,
-        amount
+        receverEmail: receverEmail || undefined,
+        receverAccount: receverAccount || undefined,
+        amount: value,
       });
-
-      setSuccess(result.message);
+      setSuccess(`${formatMoney(value)} sent successfully!`);
       setBalance(result.senderBalance);
       setReceverAccount("");
       setReceverEmail("");
-      setAmount(0);
-
+      setAmount("");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -39,46 +50,50 @@ export default function Transfer() {
 
   return (
     <>
-    <Navbar/>
-   
-    <div style={{margin:"50px auto",textAlign:"center"}}>
- 
-   
-      <h2 style={{color:"aliceblue",fontSize:"30px",padding:"30px", fontFamily: '__nextjs-Geist Mono',
-    textShadow:" 0px 0px 4px white"}}>Transfer Money</h2>
-      <form onSubmit={handleTransfer}>
-        <input type="text" placeholder="Receiver Account" value={receverAccount} onChange={e => setReceverAccount(e.target.value)} />
-      <h4  style={{
-    margin: "10px auto",
-    color: "aliceblue",
-    fontFamily: "cursive",
-    fontSize: "23px",
-    textShadow: "4px 0px 9px #e5dfdf",
-  }}>OR</h4> 
-        <input type="email" placeholder="Receiver Email" value={receverEmail} onChange={e => setReceverEmail(e.target.value)} />
- <input
-  type="text"
-  inputMode="numeric"
-  pattern="[0-9]*"
-  placeholder="Amount"
-  value={amount}
-  onChange={e => {
-    const value = e.target.value.replace(/\D/g, '');
-    setAmount(value === '' ? 0 : Number(value));
-  }}
-  required
-/>
-        <button type="submit" disabled={loading}>{loading ? "Processing..." : "Send Money"}</button>
-      </form>
-     <div style={{ marginTop: "50px", fontFamily: "revert", fontSize: "18px" }}>
-  {error && <p style={{ color: "#da2929" ,fontSize:'30px'}}>{error}</p>}
-  {success && <p style={{ color: "green" ,fontSize:"30px"}}>{success}</p>}
-  {balance !== null && <p style={{marginTop: "20px",
-    color: "antiquewhite",
-    fontSize: "20px",
-    fontFamily:" monospace"}}>Your Balance: {balance} EUR</p>}
-</div>
-    </div>
-     </>
+      <Navbar />
+      <main className="page-narrow">
+        <div className="page-header">
+          <h1>Send money</h1>
+          <p>Transfer money instantly to another YousraBank account.</p>
+        </div>
+
+        <div className="card">
+          <form onSubmit={handleTransfer} className="form">
+            <div className="field">
+              <label htmlFor="account">Account number</label>
+              <input id="account" className="input" type="text" placeholder="YOUS123456"
+                value={receverAccount} onChange={(e) => setReceverAccount(e.target.value.toUpperCase())} />
+            </div>
+            <div className="divider">or</div>
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input id="email" className="input" type="email" placeholder="friend@example.com"
+                value={receverEmail} onChange={(e) => setReceverEmail(e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="amount">Amount</label>
+              <div className="input-money">
+                <span>€</span>
+                <input id="amount" className="input" type="text" inputMode="decimal" placeholder="0,00"
+                  value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.,]/g, ""))} required />
+              </div>
+            </div>
+
+            {error && <div className="alert alert-error">{error}</div>}
+            {success && (
+              <div className="alert alert-success">
+                {success}
+                {balance !== null && <> New balance: <strong>{formatMoney(balance)}</strong></>}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} className="btn btn-primary btn-block">
+              {loading ? "Sending..." : "Send money"}
+            </button>
+            <Link href="/userdash" className="btn btn-ghost btn-block">Back to dashboard</Link>
+          </form>
+        </div>
+      </main>
+    </>
   );
 }

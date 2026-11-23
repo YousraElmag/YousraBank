@@ -41,5 +41,12 @@ export default function AuthCallback() {
     handleAuth();
   }, [router]);
 
-  return <p>Processing authentication...</p>;
+  return (
+    <main className="auth-wrap">
+      <div className="card auth-card" style={{ textAlign: "center" }}>
+        <h1>One moment...</h1>
+        <p className="subtitle">We are signing you in.</p>
+      </div>
+    </main>
+  );
 }

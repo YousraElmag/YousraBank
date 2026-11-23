@@ -1,59 +1,60 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar/Navbar";
 import { supabase } from "../lib/supabase";
 import { transferMoney } from "../components/transfer";
-import  Navbar from "../components/Navbar/Navbar"
+import { formatDate, formatMoney } from "../lib/format";
 
-interface Transaction {
+interface MoneyRequest {
   id: string;
-  senderid: string;
-  receiverid: string;
+  senderid: string;   // the person who ASKED for money
+  receiverid: string; // the person who should PAY
   amount: number;
   status: string;
   createdat: string;
-  updatedat: string;
-  receiver_name: string;
-  sender_name: string;
+  receiver_name: string | null;
+  sender_name: string | null;
 }
 
+type Tab = "received" | "sent";
+
 export default function RequestMessage() {
-  const [user, setUser] = useState<string | null>(null);
-  const [requests, setRequests] = useState<Transaction[]>([]);
-  const [error, setError] = useState<string>("");
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [requests, setRequests] = useState<MoneyRequest[]>([]);
+  const [tab, setTab] = useState<Tab>("received");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    getUserData();
-  }, []);
-
-  const getUserData = async () => {
-    const session = await supabase.auth.getSession();
-    const userid = session.data.session?.user?.id;
-
-    if (!userid) {
-      setError("User not logged in");
-      return;
-    }
-
-    setUser(userid);
-    fetchRequests(userid);
-  };
-
-  const fetchRequests = async (userid: string) => {
+  const fetchRequests = useCallback(async (id: string) => {
     const { data, error } = await supabase
-      .from<"transaction", Transaction>("transaction")
+      .from("transaction")
       .select("*")
-      .or(`receiverid.eq.${userid},senderid.eq.${userid}`)
+      .or(`receiverid.eq.${id},senderid.eq.${id}`)
       .order("createdat", { ascending: false });
 
-    if (error) {
-      setError(error.message);
-      return;
-    }
+    if (error) setError(error.message);
+    else setRequests((data as MoneyRequest[]) || []);
+  }, []);
 
-    setRequests(data || []);
-  };
-  const handleAgree = async (req: Transaction) => {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const id = data.session?.user?.id;
+      if (!id) {
+        router.push("/login");
+        return;
+      }
+      setUserId(id);
+      fetchRequests(id);
+    });
+  }, [router, fetchRequests]);
+
+  const handleAccept = async (req: MoneyRequest) => {
     setError("");
+    setSuccess("");
+    setBusyId(req.id);
     try {
       // The person who SENT the request is the one who should RECEIVE the money.
       const { data: requester, error } = await supabase
@@ -62,102 +63,96 @@ export default function RequestMessage() {
         .eq("id", req.senderid)
         .single();
 
-      if (error || !requester) {
-        setError("Requester not found");
-        return;
-      }
+      if (error || !requester) throw new Error("Requester not found");
 
-      const result = await transferMoney({
-        receverEmail: requester.email,
-        amount: req.amount,
-      });
-
-      console.log("Transfer result:", result);
-      await supabase
-        .from("transaction")
-        .update({ status: "completed" })
-        .eq("id", req.id);
-      fetchRequests(user!);
+      await transferMoney({ receverEmail: requester.email, amount: req.amount });
+      await supabase.from("transaction").update({ status: "completed" }).eq("id", req.id);
+      setSuccess(`You paid ${formatMoney(req.amount)} to ${req.sender_name ?? "the requester"}.`);
+      fetchRequests(userId!);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setBusyId(null);
     }
   };
 
-  const handleReject = async (req: Transaction) => {
+  const handleReject = async (req: MoneyRequest) => {
     setError("");
-    try {
-      await supabase
-        .from("transaction")
-        .update({ status: "rejected" })
-        .eq("id", req.id);
-
-      fetchRequests(user!);
-    } catch (err: any) {
-      setError(err.message);
-    }
+    setSuccess("");
+    setBusyId(req.id);
+    const { error } = await supabase.from("transaction").update({ status: "rejected" }).eq("id", req.id);
+    if (error) setError(error.message);
+    setBusyId(null);
+    fetchRequests(userId!);
   };
+
+  const received = requests.filter((r) => r.receiverid === userId);
+  const sent = requests.filter((r) => r.senderid === userId);
+  const shown = tab === "received" ? received : sent;
+  const pendingCount = received.filter((r) => r.status === "pending").length;
 
   return (
     <>
-    <Navbar/>
-    <div className="container" style={{ height: "fit-content",
-    margin: "20px auto",
-    width: "500px",
-    textAlign: "center",
-    background:" aliceblue",
-    boxShadow:"2px 2px 16px white"
-}}>
-      <h2>💸 Money Requests</h2>
+      <Navbar />
+      <main className="page">
+        <div className="page-header">
+          <h1>Money requests</h1>
+          <p>Pay or decline requests from others, and follow the requests you sent.</p>
+        </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {requests.length === 0 && <p>No requests found.</p>}
+        <div className="card">
+          <div className="tabs">
+            <button className={tab === "received" ? "active" : ""} onClick={() => setTab("received")}>
+              Received{pendingCount > 0 ? ` (${pendingCount})` : ""}
+            </button>
+            <button className={tab === "sent" ? "active" : ""} onClick={() => setTab("sent")}>
+              Sent
+            </button>
+          </div>
 
-      <ul>
-        {requests.map((req) => {
-          const isSender = req.senderid === user;
-          return (
-            <li key={req.id} style={{ marginBottom: "10px" }}>
-              <p>
-                <strong>{isSender ? "To:" : "From:"}</strong>{" "}
-                {isSender ? req.receiver_name : req.sender_name} <br />
-                <strong>Amount:</strong> {req.amount} EUR <br />
-                <strong>Status:</strong> {req.status} <br />
-                <strong>Date:</strong> {new Date(req.createdat).toLocaleString()}
-              </p>
+          {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>{error}</div>}
+          {success && <div className="alert alert-success" style={{ marginBottom: 12 }}>{success}</div>}
 
-              {!isSender && req.status === "pending" && (
-                <>
-                  <button
-                    onClick={() => handleAgree(req)}
-                    style={{
-                      background: "green",
-                      padding: "5px",
-                      marginLeft: "5px",
-                      color: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Agree
-                  </button>
-                  <button
-                    onClick={() => handleReject(req)}
-                    style={{
-                      background: "red",
-                      padding: "5px",
-                      marginLeft: "5px",
-                      color: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Reject
-                  </button>
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+          {shown.length === 0 ? (
+            <div className="empty">
+              <div className="icon">✉️</div>
+              <p>No requests here yet</p>
+            </div>
+          ) : (
+            <ul className="list">
+              {shown.map((req) => {
+                const isIncoming = tab === "received";
+                const name = (isIncoming ? req.sender_name : req.receiver_name) || "Unknown";
+                return (
+                  <li key={req.id} className="list-item">
+                    <div className="avatar">{name[0]?.toUpperCase()}</div>
+                    <div className="list-main">
+                      <strong>
+                        {isIncoming ? `${name} asks you for` : `You asked ${name} for`} {formatMoney(req.amount)}
+                      </strong>
+                      <small>
+                        {formatDate(req.createdat)} · <span className={`badge badge-${req.status}`}>{req.status}</span>
+                      </small>
+                    </div>
+                    {isIncoming && req.status === "pending" && (
+                      <div className="list-actions">
+                        <button className="btn btn-danger btn-sm" disabled={busyId === req.id}
+                          onClick={() => handleReject(req)}>
+                          Decline
+                        </button>
+                        <button className="btn btn-primary btn-sm" disabled={busyId === req.id}
+                          onClick={() => handleAccept(req)}>
+                          {busyId === req.id ? "Paying..." : "Pay"}
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </main>
     </>
   );
 }

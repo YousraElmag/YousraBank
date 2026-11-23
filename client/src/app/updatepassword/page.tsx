@@ -1,43 +1,62 @@
 "use client";
-import { useState } from "react";
-import { supabase } from "../lib/supabase";
-import "./update.css";
-import Navbar from "../components/Navbar/Navbar";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar/Navbar";
+import { supabase } from "../lib/supabase";
 
 export default function UpdatePassword() {
   const [password, setPassword] = useState("");
- const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const router = useRouter();
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
 
-    const { data, error } = await supabase.auth.updateUser({ password });
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
 
     if (error) {
-      alert(error.message);
+      setError(error.message);
     } else {
-      alert("Password updated successfully!");
+      setMessage("Password updated! Redirecting to log in...");
       setPassword("");
-      router.push('/login')
+      setTimeout(() => router.push("/login"), 1500);
     }
   };
 
   return (
     <>
       <Navbar />
-      <div className="update-password-container">
-        <form className="update-password-form" onSubmit={handleUpdate}>
-          <h2>Update Password</h2>
-          <input
-            type="password"
-            placeholder="New password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Update Password</button>
-        </form>
-      </div>
+      <main className="auth-wrap">
+        <div className="card auth-card">
+          <h1>Choose a new password</h1>
+          <p className="subtitle">Make it strong and easy for you to remember.</p>
+
+          <form className="form" onSubmit={handleUpdate}>
+            <div className="field">
+              <label htmlFor="password">New password</label>
+              <input id="password" className="input" type="password" value={password}
+                onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
+              <span className="hint">At least 6 characters</span>
+            </div>
+
+            {error && <div className="alert alert-error">{error}</div>}
+            {message && <div className="alert alert-success">{message}</div>}
+
+            <button type="submit" disabled={loading} className="btn btn-primary btn-block">
+              {loading ? "Saving..." : "Update password"}
+            </button>
+          </form>
+        </div>
+      </main>
     </>
   );
 }

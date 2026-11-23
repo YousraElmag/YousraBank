@@ -1,127 +1,120 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import "./UserDashboard.css";
-import Navbar from "../components/Navbar/Navbar";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
-import Logout from "../logout/page";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User } from "@supabase/supabase-js";
+import Navbar from "../components/Navbar/Navbar";
+import PaymentList, { Payment } from "../components/PaymentList";
+import { supabase } from "../lib/supabase";
+import { formatMoney } from "../lib/format";
+
+interface Account {
+  first_name: string | null;
+  last_name: string | null;
+  bank_account: string | null;
+  balance: number | null;
+}
 
 export default function UserDashboard() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-const [useraccount, setUseraccount] = useState<any | null>(null);
-const [payments, setPayments] = useState<any[]>([]);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchUser() {
+    async function load() {
       const { data, error } = await supabase.auth.getUser();
-      if (error) return;
+      if (error || !data.user) {
+        router.push("/login"); // not logged in
+        return;
+      }
       setUser(data.user);
+
+      const [accountRes, paymentsRes] = await Promise.all([
+        supabase.from("users").select("first_name, last_name, bank_account, balance").eq("id", data.user.id).maybeSingle(),
+        supabase
+          .from("payments")
+          .select(`*, sender:sender_id(first_name, last_name), recipient:recipient_id(first_name, last_name)`)
+          .or(`sender_id.eq.${data.user.id},recipient_id.eq.${data.user.id}`)
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
+
+      if (accountRes.error) setError(accountRes.error.message);
+      else if (!accountRes.data) setError("We could not find your bank account. Please contact support.");
+      setAccount(accountRes.data);
+      setPayments((paymentsRes.data as Payment[]) || []);
+      setLoading(false);
     }
-    fetchUser();
-  }, []);
+    load();
+  }, [router]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    async function fetchUserTable() {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user!.id)
-        .single();
-
-      if (error) return;
-      setUseraccount(data);
-    }
-
-    fetchUserTable();
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    async function fetchUserPayments() {
-      const { data, error } = await supabase
-        .from("payments")
-        .select(`
-          *,
-          sender:sender_id(id, first_name, last_name),
-          recipient:recipient_id(id, first_name, last_name)
-        `)
-        .or(`sender_id.eq.${user!.id},recipient_id.eq.${user!.id}`)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (error) return console.error(error);
-      setPayments(data || []);
-    }
-
-    fetchUserPayments();
-  }, [user]);
+  const firstName = account?.first_name || user?.user_metadata?.firstname || "";
 
   return (
     <>
       <Navbar />
-      <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div>
-            <h1>{user?.email}</h1>
-            <p>Account Number: {useraccount?.bank_account || "N/A"}</p>
-            <p>
-              Hello {useraccount?.first_name} {useraccount?.last_name}
-            </p>
-          </div>
-          <Logout />
-        </header>
+      <main className="page">
+        <div className="page-header">
+          <h1>{loading ? "Loading..." : `Hello${firstName ? `, ${firstName}` : ""} 👋`}</h1>
+          <p>Here is an overview of your account.</p>
+        </div>
 
-        <div className="dashboard-actions">
-         <Link href='/transfer'><button className="action-card">
-            <span className="icon">💸</span>
-         <span className="title">Transfer Money</span>
-          </button></Link> 
-          <Link href='/requestmoney'>
-          <button className="action-card">
-            <span className="icon">💰</span>
-            <span className="title">Request Transfer</span>
-          </button></Link>
-          <div className="action-card balance-card">
-            <span className="title">Account Balance</span>
-            <span className="amount">€{useraccount?.balance || 0}</span>
+        {error && <div className="alert alert-error" style={{ marginBottom: 20 }}>{error}</div>}
+
+        <div className="dash-grid">
+          <div className="card balance-card">
+            <div className="balance-label">Available balance</div>
+            <div className="balance-amount">{formatMoney(account?.balance)}</div>
+            <div className="account-row">
+              <div>
+                <span>Account number</span>
+                <strong>{account?.bank_account || "—"}</strong>
+              </div>
+              <div>
+                <span>Account holder</span>
+                <strong>{account ? `${account.first_name ?? ""} ${account.last_name ?? ""}` : "—"}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="card-title">Quick actions</h2>
+            <div className="actions">
+              <Link href="/transfer" className="action">
+                <span className="icon">💸</span>
+                <strong>Send money</strong>
+                <small>To email or account</small>
+              </Link>
+              <Link href="/requestmoney" className="action">
+                <span className="icon">💰</span>
+                <strong>Request money</strong>
+                <small>Ask someone to pay</small>
+              </Link>
+              <Link href="/requestmessage" className="action">
+                <span className="icon">✉️</span>
+                <strong>Requests</strong>
+                <small>Pay or decline</small>
+              </Link>
+              <Link href="/payments" className="action">
+                <span className="icon">🧾</span>
+                <strong>All payments</strong>
+                <small>Full history</small>
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="payments">
-          <h2>📝 Your Payments</h2>
-          <ul>
-         {payments.length > 0 ? (
-  <>
-    {payments
-      .filter((p) => p.amount > 0)
-      .map((p) => (
-        <li key={p.id}>
-          {p.sender_id === user?.id ? (
-            <span style={{ color: "red" }}>
-              -€{p.amount} → {p.recipient?.first_name} {p.recipient?.last_name}
-            </span>
-          ) : (
-            <span style={{ color: "green" }}>
-              +€{p.amount} ← {p.sender?.first_name ?? "Unknown"} {p.sender?.last_name}
-            </span>
-          )}
-        </li>
-      ))}
-    <Link href="/payments">
-      <button className="allpaymentsbutton">Show all payments</button>
-    </Link>
-  </>
-) : (
-  <p>No payments yet</p>
-)}
-          </ul>
-
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Recent activity</h2>
+            <Link href="/payments">View all</Link>
+          </div>
+          <PaymentList payments={payments} userId={user?.id} />
         </div>
-      </div>
+      </main>
     </>
   );
 }
